@@ -1,0 +1,72 @@
+{
+  "author": {
+    "name": "liuyuanyang",
+    "email": "liuyuanyangscript@gmail.com",
+    "url": "https://github.com/hoperyy"
+  },
+  "bugs": {
+    "url": "https://github.com/weidian-inc/bio-core/issues",
+    "email": "liuyuanyangscript@gmail.com"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "child-process-close": "^0.1.1",
+    "chokidar": "^1.7.0",
+    "co": "^4.6.0",
+    "co-exec": "^1.1.0",
+    "colors": "^1.1.2",
+    "commander": "2.9.0",
+    "coveralls": "^3.0.0",
+    "find-process": "^1.1.0",
+    "fs-extra": "^2.1.2",
+    "get-npm-package-version": "^1.0.0",
+    "get-port": "^3.1.0",
+    "inquirer": "^3.2.2",
+    "is-relative": "^1.0.0",
+    "kill-port": "^1.0.0",
+    "lodash": "^4.17.4",
+    "md5": "^2.2.1",
+    "md5-file": "^3.1.1",
+    "merge-dirs": "^0.2.1",
+    "node-static": "^0.7.10",
+    "ora": "^1.3.0",
+    "procfs-stats": "^1.0.2",
+    "progress-bar": "^0.1.1",
+    "ps-node": "^0.1.6",
+    "readdir-enhanced": "^1.5.2",
+    "recursive-readdir-sync": "^1.0.6",
+    "registry-url": "^3.1.0",
+    "sync-directory": "^1.0.1",
+    "url-parse": "^1.1.9"
+  },
+  "deprecated": false,
+  "description": "vbuilder-cli-core",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.7.2",
+    "eslint-config-airbnb-base": "^12.0.0",
+    "eslint-plugin-import": "^2.7.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=6.9.2"
+  },
+  "homepage": "https://github.com/weidian-inc/bio-core",
+  "keywords": [
+    "bio",
+    "cli",
+    "build"
+  ],
+  "name": "bio-core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/weidian-inc/bio-core"
+  },
+  "scripts": {
+    "lint": "eslint bin/** core/** index.js",
+    "test": "istanbul cover _mocha test/*",
+    "coverage": "cat ./coverage/lcov.info | coveralls"
+  },
+  "version": "1.0.0"
+}
