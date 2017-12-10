@@ -30,13 +30,13 @@ module.exports = (commander) => {
 
             list: [{
                 shortName: 'pure',
-                fullName: 'bio-pure',
+                fullName: 'bio-scaffold-pure',
             }, {
                 shortName: 'vue',
-                fullName: 'bio-vue',
+                fullName: 'bio-scaffold-vue',
             }, {
                 shortName: 'react',
-                fullName: 'bio-react',
+                fullName: 'bio-scaffold-react',
             }],
 
             preInstall(installationDir) {
