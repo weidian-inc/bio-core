@@ -40,7 +40,7 @@
     "url-parse": "^1.1.9"
   },
   "deprecated": false,
-  "description": "vbuilder-cli-core",
+  "description": "bio-core",
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.7.2",
@@ -50,7 +50,7 @@
     "mocha": "^3.5.3"
   },
   "engines": {
-    "node": ">=6.9.2"
+    "node": ">=8.9.1"
   },
   "homepage": "https://github.com/weidian-inc/bio-core",
   "keywords": [
