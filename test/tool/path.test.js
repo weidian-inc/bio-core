@@ -17,7 +17,7 @@ describe('test bio-cmd/tool/path.js functions', () => {
     });
 
     it('test getScaffoldExecInstallFolder', () => {
-        expect(getScaffoldExecInstallFolder.call(pathUtil, 'vue')).to.be.equal(path.join(cacheFolder, 'scaffold', `install-cache-${md5('vue')}`));
+        expect(getScaffoldExecInstallFolder.call(pathUtil, 'vue')).to.be.equal(path.join(cacheFolder, 'scaffold', 'tmp-install-cache', `${md5('vue')}`));
     });
 
     it('test getScaffoldFolder', () => {

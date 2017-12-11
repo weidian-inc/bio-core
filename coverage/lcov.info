@@ -1,5 +1,5 @@
 TN:
-SF:/Users/lyy/.bio/bio-core-module/node_modules/bio-core/core/tool/file.js
+SF:/Users/lyy/Downloads/code/weidian-inc-github/bio-core/core/tool/file.js
 FN:36,(anonymous_1)
 FN:47,(anonymous_2)
 FN:58,(anonymous_3)
@@ -93,7 +93,7 @@ BRF:28
 BRH:25
 end_of_record
 TN:
-SF:/Users/lyy/.bio/bio-core-module/node_modules/bio-core/core/tool/network.js
+SF:/Users/lyy/Downloads/code/weidian-inc-github/bio-core/core/tool/network.js
 FN:20,(anonymous_1)
 FN:33,checkPortUsed
 FN:48,getFreePort
@@ -140,7 +140,7 @@ BRF:6
 BRH:6
 end_of_record
 TN:
-SF:/Users/lyy/.bio/bio-core-module/node_modules/bio-core/core/tool/path.js
+SF:/Users/lyy/Downloads/code/weidian-inc-github/bio-core/core/tool/path.js
 FN:25,(anonymous_1)
 FN:35,(anonymous_2)
 FN:45,(anonymous_3)
@@ -167,7 +167,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:/Users/lyy/.bio/bio-core-module/node_modules/bio-core/core/tool/scaffold.js
+SF:/Users/lyy/Downloads/code/weidian-inc-github/bio-core/core/tool/scaffold.js
 FN:59,(anonymous_1)
 FN:61,(anonymous_2)
 FN:68,(anonymous_3)
@@ -285,7 +285,7 @@ BRF:20
 BRH:8
 end_of_record
 TN:
-SF:/Users/lyy/.bio/bio-core-module/node_modules/bio-core/core/tool/npm.js
+SF:/Users/lyy/Downloads/code/weidian-inc-github/bio-core/core/tool/npm.js
 FNF:0
 FNH:0
 DA:8,1
