@@ -83,7 +83,7 @@ module.exports = (commander) => {
         .description('orders about scaffold.')
         .action((cmd, param) => {
             if (cmd === 'create') {
-                const scaffoldName = 'bio-demo';
+                const scaffoldName = 'bio-scaffold-demo';
 
                 inquirer.prompt([{
                     type: 'input',
@@ -91,8 +91,8 @@ module.exports = (commander) => {
                     message: 'Input scaffold name',
                 }]).then((answers) => {
                     console.log(`\nCreating scaffold: ${scaffoldName}. You can modify scaffold infomation after the installation`);
-                    core.scaffold.install('bio-demo');
-                    core.scaffold.rename('bio-demo', answers.createdScaffoldName);
+                    core.scaffold.install(scaffoldName);
+                    core.scaffold.rename(scaffoldName, answers.createdScaffoldName);
                     core.scaffold.show(answers.createdScaffoldName);
                 });
             } else if (cmd === 'show') {
