@@ -15,3 +15,8 @@ BSD License
 Copyright (C) 2017, [weidian.com](https://www.weidian.com/)
 
 All rights reserved.
+
+## TODO
+
++   持续集成
++   English Docs
