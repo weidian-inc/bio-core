@@ -8,15 +8,11 @@ bio 帮助前端开发者快速开发页面。
 
 bio 是什么：https://github.com/weidian-inc/bio-cli
 
-## LICENSE
-
-MIT
-
-Copyright (C) 2017, [weidian.com](https://www.weidian.com/)
-
-All rights reserved.
-
 ## TODO
 
 +   持续集成
 +   English Docs
+
+## LICENSE
+
+MIT
