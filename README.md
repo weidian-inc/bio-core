@@ -10,7 +10,7 @@ bio 是什么：https://github.com/weidian-inc/bio-cli
 
 ## LICENSE
 
-BSD License
+MIT
 
 Copyright (C) 2017, [weidian.com](https://www.weidian.com/)
 
