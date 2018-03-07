@@ -62,7 +62,7 @@ function installDependencies({ type }) {
 
 function execLint({ finalLintTarget, lintResultSrcFile, fix }) {
     if (!fs.existsSync(path.join(cwd, 'node_modules/eslint/lib/cli.js'))) {
-        console.log(red(`\nError: eslint is required but not installed, please run ${green('v lint init')} first\n`));
+        console.log(red(`\nError: eslint is required but not installed, please run ${green('bio lint init')} first\n`));
         return 999; // exitCode
     }
 

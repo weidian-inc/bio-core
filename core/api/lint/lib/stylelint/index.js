@@ -35,7 +35,7 @@ function installDependencies() {
 function execLint({ lintResultSrcFile, fix }) {
     // 检查依赖是否安装
     if (!fs.existsSync(path.join(cwd, '/node_modules/stylelint/bin/stylelint.js'))) {
-        console.log(red(`\nError: stylelint is required but not installed, please run ${green('v lint init')} first\n`));
+        console.log(red(`\nError: stylelint is required but not installed, please run ${green('bio lint init')} first\n`));
         return 999; // exitCode
     }
 
