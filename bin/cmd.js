@@ -1,11 +1,11 @@
 module.exports = (commander) => {
+    require('colors');
+
     const nodeVersion = process.version.replace('v', '');
     if (nodeVersion.split('.')[0] < 8) {
-        console.log(`\nNode version 8.9.1+ is required for bio, please upgrade your node.(current version is ${nodeVersion})\n`);
+        console.log(`\nNode version 8.9.1+ is required for bio (current version is ${nodeVersion}), please upgrade your node.\n`.red);
         return;
     }
-
-    require('colors');
 
     const fs = require('fs');
     const path = require('path');
@@ -17,10 +17,23 @@ module.exports = (commander) => {
     const CURRENT_FOLDER = process.cwd();
     const IS_CONFIG_EXISTS = fs.existsSync(path.join(CURRENT_FOLDER, CONFIG_FILE_NAME));
 
+    process.on('uncaughtException', (e) => {
+        console.log(e)
+        process.exit(1);
+    });
+
+    process.on('SIGINT', () => {
+        process.exit(1);
+    });
+
+    process.on('unhandledRejection', (reason, p) => {
+        console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
+    });
+
     const showHelp = () => {
         console.log(['',
             ` - init                >  ${'bio init [scaffoldName]'.green}`,
-            ` - run                 >  ${'bio run <task> [--no-watch]'.green}`,
+            ` - run                 >  ${'bio run <task> [-n, --no-watch]'.green}`,
             ` - mock                >  ${'bio mock [port]'.green}`,
             ` - show scaffold       >  ${'bio scaffold show <scaffoldName>'.green}`,
             ` - create scaffold     >  ${'bio scaffold create'.green}`,
@@ -37,12 +50,18 @@ module.exports = (commander) => {
             list: [{
                 shortName: 'pure',
                 fullName: 'bio-scaffold-pure',
+                desc: 'traditional project',
+                version: 'latest',
             }, {
                 shortName: 'vue',
                 fullName: 'bio-scaffold-vue',
+                desc: 'vue project',
+                version: 'latest',
             }, {
                 shortName: 'react',
                 fullName: 'bio-scaffold-react',
+                desc: 'react project',
+                version: 'latest',
             }],
 
             preInstall(installationDir) {
@@ -119,11 +138,18 @@ module.exports = (commander) => {
         });
 
     commander
-        .command('lint')
+        .command('lint [lintTarget]')
         .description('lint.')
-        .option('--fix', 'fix')
-        .action(() => {
-            core.lint(process.argv.slice(process.argv.indexOf('lint') + 1).join(' '));
+        .option('-t, --type [value]', 'init type, such as es6/es5')
+        .option('-w, --watch', 'watch')
+        .option('-f, --fix', 'format')
+        .action((lintTarget, cmd) => {
+            if (lintTarget && lintTarget === 'init') {
+                // core.hook({});
+                core.lint.init({ type: cmd.type || 'es6' });
+            } else {
+                core.lint.run({ lintTarget, watch: cmd.watch, fix: cmd.fix });
+            }
         });
 
     commander

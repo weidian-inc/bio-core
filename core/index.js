@@ -20,4 +20,6 @@ module.exports = {
     mock: require('./api/mock/index'),
 
     lint: require('./api/lint/index'),
+
+    hook: require('./api/hook/index'),
 };

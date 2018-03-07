@@ -54,9 +54,10 @@ module.exports = ({ cacheFolder, configName, scaffold } = {}) => {
             scaffold.list.forEach((item, index) => {
                 const formattedItem = {};
 
-                formattedItem.name = item.shortName;
+                formattedItem.name = `${item.shortName} : ${item.desc}`;
                 formattedItem.value = item.shortName;
                 formattedItem.fullName = item.fullName;
+                formattedItem.version = item.version || 'latest';
 
                 formattedScaffoldList[index] = formattedItem;
             });
