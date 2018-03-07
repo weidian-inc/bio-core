@@ -1,4 +1,10 @@
 module.exports = (commander) => {
+    const nodeVersion = process.version.replace('v', '');
+    if (nodeVersion.split('.')[0] < 8) {
+        console.log(`\nNode version 8.9.1+ is required for bio, please upgrade your node.(current version is ${nodeVersion})\n`);
+        return;
+    }
+
     require('colors');
 
     const fs = require('fs');
