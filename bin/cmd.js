@@ -37,6 +37,8 @@ module.exports = (commander) => {
             ` - mock                >  ${'bio mock [port]'.green}`,
             ` - show scaffold       >  ${'bio scaffold show <scaffoldName>'.green}`,
             ` - create scaffold     >  ${'bio scaffold create'.green}`,
+            ` - lint init           >  ${'bio lint init [-t, --type [value]]'.green}`,
+            ` - lint run            >  ${'bio lint [-w, --watch]'.green}`,
             ` - help                >  ${'bio help'.green}\n`,
         ].join('\n'));
     };
