@@ -2,11 +2,7 @@
 
 ## 介绍
 
-这是 bio 的核心处理模块。
-
-bio 帮助前端开发者快速开发页面。
-
-bio 是什么：https://github.com/weidian-inc/bio-cli
+这是 bio 的核心处理模块，您无需单独使用该模块，快速上手 bio：https://github.com/weidian-inc/bio-cli
 
 ## TODO
 
