@@ -28,7 +28,7 @@ function installDependencies() {
     util.ensureModule([
         'stylelint',
         'stylelint-config-standard',
-        'stylelint-processor-html',
+        'stylelint-formatter-html',
     ], cwd);
 }
 
