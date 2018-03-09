@@ -27,7 +27,7 @@ function initParams(params) {
     globalParams = {
         ...params,
         finalLintTarget: cwd,
-        stylelintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.txt'),
+        stylelintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.html'),
         eslintResultSrcFile: path.resolve(cwd, 'lint-result', 'eslint-result-src.html'),
         lintResultIndexFile: path.resolve(cwd, 'lint-result', 'lint-result-index.html'),
     };

@@ -40,7 +40,7 @@ function execLint({ lintResultSrcFile, fix }) {
     }
 
     const lintedFiles = `"${path.join(cwd, '**/*.css')}" "${path.join(cwd, '**/*.less')}" "${path.join(cwd, '**/*.scss')}" "${path.join(cwd, '**/*.sass')}" "${path.join(cwd, '**/*.vue')}"`;
-    const order = `${cwd}/node_modules/stylelint/bin/stylelint.js ${lintedFiles} ${fix ? '--fix' : ''} --cache --cache-location ${path.join(path.dirname(lintResultSrcFile), '.stylelintcache')} -f string --syntax less > ${lintResultSrcFile}`;
+    const order = `${cwd}/node_modules/stylelint/bin/stylelint.js ${lintedFiles} ${fix ? '--fix' : ''} --cache --cache-location ${path.join(path.dirname(lintResultSrcFile), '.stylelintcache')} -f string --custom-formatter ${cwd}/node_modules/stylelint-formatter-html --syntax less > ${lintResultSrcFile}`;
 
     // 准备结果文件
     fse.ensureFileSync(lintResultSrcFile);
@@ -74,7 +74,7 @@ let globalParams;
  */
 module.exports = {
     initParams(params) {
-        globalParams = { ...params, lintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.txt') };
+        globalParams = { ...params, lintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.html') };
     },
 
     initConfigFiles,
