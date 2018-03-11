@@ -117,7 +117,7 @@ module.exports = (commander) => {
                     name: 'createdScaffoldName',
                     message: 'Input scaffold name',
                 }]).then((answers) => {
-                    console.log(`\nCreating scaffold: ${scaffoldName}. You can modify scaffold infomation after the installation`);
+                    console.log(`\nCreating scaffold: ${scaffoldName}. You can modify scaffold information after the installation`);
                     core.scaffold.install(scaffoldName);
                     core.scaffold.rename(scaffoldName, answers.createdScaffoldName);
                     core.scaffold.show(answers.createdScaffoldName);
