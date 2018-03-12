@@ -20,5 +20,5 @@ module.exports = (scaffoldName = '') => {
     const fullScaffoldName = scaffoldUtil.getFullName(scaffoldName);
 
     console.log(`installing scaffold ${fullScaffoldName}...`);
-    scaffoldUtil.installScaffold(fullScaffoldName);
+    scaffoldUtil.installScaffold(fullScaffoldName, { async: false });
 };
