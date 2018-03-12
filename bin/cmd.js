@@ -18,12 +18,12 @@ module.exports = (commander) => {
     const IS_CONFIG_EXISTS = fs.existsSync(path.join(CURRENT_FOLDER, CONFIG_FILE_NAME));
 
     process.on('uncaughtException', (e) => {
-        console.log(e)
+        console.log(e);
         process.exit(1);
     });
 
     process.on('SIGINT', () => {
-        process.exit(1);
+        process.exit(0);
     });
 
     process.on('unhandledRejection', (reason, p) => {
