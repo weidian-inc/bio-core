@@ -27,49 +27,65 @@ const createExecPackageJsonFile = (execInstallFolder, scaffoldName) => {
 };
 
 const getMaps = (() => {
-    let shortNameMap = null;
-    let fullNameMap = null;
+    let shortKeyMap = null;
+    let fullKeyMap = null;
 
     return (scaffoldList) => {
-        if (shortNameMap && fullNameMap) {
+        if (shortKeyMap && fullKeyMap) {
             return {
-                shortNameMap,
-                fullNameMap,
+                shortKeyMap,
+                fullKeyMap,
             };
         }
 
-        shortNameMap = {};
+        fullKeyMap = {};
         scaffoldList.forEach((item) => {
-            shortNameMap[item.fullName] = item.value;
+            fullKeyMap[item.fullName] = {
+                otherName: item.value,
+                version: item.version,
+            };
         });
 
-        fullNameMap = {};
+        shortKeyMap = {};
         scaffoldList.forEach((item) => {
-            fullNameMap[item.value] = item.fullName;
+            shortKeyMap[item.value] = {
+                otherName: item.fullName,
+                version: item.version,
+            };
         });
 
         return {
-            shortNameMap,
-            fullNameMap,
+            shortKeyMap,
+            fullKeyMap,
         };
     };
 })();
 
 module.exports = {
+    checkOutdated: true,
+
     preInstall() {},
 
     getFullName(scaffoldName) {
         const maps = getMaps(this.scaffoldList);
-        const { fullNameMap } = maps;
+        const { shortKeyMap } = maps;
 
-        return fullNameMap[scaffoldName] ? fullNameMap[scaffoldName] : scaffoldName;
+        return shortKeyMap[scaffoldName] ? shortKeyMap[scaffoldName].otherName : scaffoldName;
     },
 
     getShortName(scaffoldName) {
         const maps = getMaps(this.scaffoldList);
-        const { shortNameMap } = maps;
+        const { fullKeyMap } = maps;
 
-        return shortNameMap[scaffoldName] ? shortNameMap[scaffoldName] : scaffoldName;
+        return fullKeyMap[scaffoldName] ? fullKeyMap[scaffoldName].otherName : scaffoldName;
+    },
+
+    getHopedVersion(scaffoldName) {
+        const maps = getMaps(this.scaffoldList);
+        const fullName = this.getFullName(scaffoldName);
+        const hopedVersion = maps.fullKeyMap[fullName] ? maps.fullKeyMap[fullName].version : 'latest';
+
+        return hopedVersion;
     },
 
     scaffoldList: [], // TODO: add default scaffolds
@@ -97,17 +113,19 @@ module.exports = {
      * @param {String} scaffoldName
      */
     ensureScaffoldLatest(scaffoldName) {
+        // move cached scaffold file, if exists
+        this.moveScaffoldCache(scaffoldName);
+
         if (!this.isScaffoldExists(scaffoldName)) {
             console.log(`installing scaffold ${scaffoldName}...`);
-            this.installScaffold(scaffoldName);
+            this.installScaffold(scaffoldName, { async: false });
             console.log(`scaffold ${scaffoldName} installed successfully`);
             return;
         }
 
         if (this._isScaffoldOutdate(scaffoldName)) {
-            console.log(`updating scaffold ${scaffoldName}...`);
-            this.installScaffold(scaffoldName);
-            console.log(`scaffold ${scaffoldName} updated successfully`);
+            console.log(`\nupdating scaffold ${scaffoldName} silently...\n`);
+            this.installScaffold(scaffoldName, { async: true });
         }
     },
 
@@ -135,21 +153,73 @@ module.exports = {
      * @return {Boolean}
      */
     _isScaffoldOutdate(scaffoldName) {
+        if (!this.checkOutdated) {
+            return false;
+        }
+
         const packagejsonFilePath = path.join(pathUtil.getScaffoldFolder(scaffoldName), 'package.json');
 
         const obj = JSON.parse(fs.readFileSync(packagejsonFilePath).toString());
 
         const currentVersion = obj.version;
-        const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.scaffoldRegistry, timeout: 2000 });
 
-        if (latestVersion) {
-            if (currentVersion !== latestVersion) {
+        const hopedVersion = this.getHopedVersion(scaffoldName);
+
+        if (hopedVersion !== 'latest') {
+            if (hopedVersion !== currentVersion) {
+                console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
+                console.log('   - scaffoldName: ', scaffoldName);
+                console.log('   - currentVersion: ', currentVersion);
+                console.log('   - hopedVersion: ', hopedVersion);
                 return true;
+            } else {
+                return false;
             }
+        } else {
+            const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.scaffoldRegistry, timeout: 2000 });
+
+            if (latestVersion) {
+                if (currentVersion !== latestVersion) {
+                    console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
+                    console.log('  - scaffoldName: ', scaffoldName);
+                    console.log('  - currentVersion: ', currentVersion);
+                    console.log('  - hopedVersion: ', hopedVersion, latestVersion, '\n');
+                    return true;
+                }
+                return false;
+            }
+
             return false;
         }
+    },
 
-        return false;
+    moveScaffoldCache(scaffoldName) {
+        const execInstallFolder = pathUtil.getScaffoldExecInstallFolder(scaffoldName);
+        const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
+        const scaffoldWrapper = pathUtil.getScaffoldWrapper(scaffoldName);
+
+        const srcScaffold = path.join(execInstallFolder, 'node_modules', scaffoldName);
+        const srcScaffoldDep = path.join(execInstallFolder, 'node_modules');
+
+        if (!fs.existsSync(srcScaffold) || !fs.existsSync(srcScaffoldDep)) {
+            return;
+        }
+
+        if (fs.existsSync(scaffoldFolder)) {
+            fse.removeSync(scaffoldFolder);
+        }
+
+        // move node_modules
+        fse.moveSync(srcScaffold, path.join(scaffoldWrapper, scaffoldName), {
+            overwrite: true,
+        });
+
+        // merge node_modules
+        console.log('\nreplacing scaffold...');
+        mergeDirs.default(srcScaffoldDep, path.join(scaffoldFolder, 'node_modules'), 'overwrite');
+        console.log('replecement done.');
+
+        fse.removeSync(execInstallFolder);
     },
 
     /**
@@ -157,10 +227,14 @@ module.exports = {
      * @desc install scaffold
      * @param {String} scaffoldName
      */
-    installScaffold(scaffoldName) {
+    installScaffold(scaffoldName, options) {
+        const { async } = options;
         const execInstallFolder = pathUtil.getScaffoldExecInstallFolder(scaffoldName);
         const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
         const scaffoldWrapper = pathUtil.getScaffoldWrapper(scaffoldName);
+        const child = require('child_process');
+
+        const hopedVersion = this.getHopedVersion(scaffoldName);
 
         // ensure exec dir
         fse.ensureDirSync(execInstallFolder);
@@ -169,25 +243,29 @@ module.exports = {
         createExecPackageJsonFile(execInstallFolder, scaffoldName);
         this.preInstall(execInstallFolder);
 
-        require('child_process').execSync(`cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@latest`, {
-            stdio: 'inherit',
-        });
+        const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}`;
+        console.log(order);
 
-        if (fs.existsSync(scaffoldFolder)) {
-            fse.removeSync(scaffoldFolder);
+        if (async) {
+            child.exec(order, (error, stdout, stderr) => {
+                if (error) {
+                    // remove exec dir
+                    fse.removeSync(execInstallFolder);
+                    return;
+                }
+    
+                console.log(`scaffold "${scaffoldName}" updated successfully!`);
+            });
+        } else {
+            try {
+                child.execSync(order, {
+                    stdio: 'inherit',
+                });
+        
+                this.moveScaffoldCache(scaffoldName);
+            } catch (err) {
+                throw Error(err);
+            }
         }
-
-        // move node_modules
-        fse.moveSync(path.join(execInstallFolder, 'node_modules', scaffoldName), path.join(scaffoldWrapper, scaffoldName), {
-            overwrite: true,
-        });
-
-        // merge node_modules
-        console.log('merging node_modules...');
-        mergeDirs.default(path.join(execInstallFolder, 'node_modules'), path.join(scaffoldFolder, 'node_modules'), 'overwrite');
-        console.log('merge node_modules done.');
-
-        // remove exec dir
-        fse.removeSync(execInstallFolder);
     },
 };
