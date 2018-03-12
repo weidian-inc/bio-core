@@ -244,7 +244,6 @@ module.exports = {
         this.preInstall(execInstallFolder);
 
         const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}`;
-        console.log(order);
 
         if (async) {
             child.exec(order, (error, stdout, stderr) => {
