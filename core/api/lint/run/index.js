@@ -1,7 +1,7 @@
 /**
  * @file
  * @desc lint project
- * @author liuyuanyangscript@gmail.com https://github.com/hoperyy
+ * @author https://github.com/hoperyy
  * @date  2017/08/11
  */
 

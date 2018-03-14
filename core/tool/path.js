@@ -1,7 +1,7 @@
 /**
  * @file
  * @desc path handers
- * @author liuyuanyangscript@gmail.com
+ * @author https://github.com/hoperyy
  * @date  2017/08/11
  */
 
