@@ -155,6 +155,13 @@ module.exports = (commander) => {
         });
 
     commander
+        .command('test')
+        .description('add test configs.')
+        .action(() => {
+            core.test();
+        });
+
+    commander
         .command('help')
         .description('help.')
         .action(showHelp);

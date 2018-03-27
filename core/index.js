@@ -22,4 +22,6 @@ module.exports = {
     lint: require('./api/lint/index'),
 
     hook: require('./api/hook/index'),
+
+    test: require('./api/test/index')
 };
