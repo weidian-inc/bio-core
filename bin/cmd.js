@@ -32,14 +32,20 @@ module.exports = (commander) => {
 
     const showHelp = () => {
         console.log(['',
-            ` - init                >  ${'bio init [scaffoldName]'.green}`,
-            ` - run                 >  ${'bio run <task> [-n, --no-watch]'.green}`,
-            ` - mock                >  ${'bio mock [port]'.green}`,
-            ` - show scaffold       >  ${'bio scaffold show <scaffoldName>'.green}`,
-            ` - create scaffold     >  ${'bio scaffold create'.green}`,
-            ` - lint init           >  ${'bio lint init [-t, --type [value]]'.green}`,
-            ` - lint run            >  ${'bio lint [-w, --watch]'.green}`,
-            ` - help                >  ${'bio help'.green}\n`,
+            '',
+            ` - init project                >  ${'bio init [scaffoldName]'.green}`,
+            '',
+            ` - run scaffold task           >  ${'bio run <task> [-n, --no-watch]'.green}`,
+            ` - run local mock              >  ${'bio mock [port]'.green}`,
+            '',
+            ` - show scaffold               >  ${'bio scaffold show <scaffoldName>'.green}`,
+            ` - create scaffold             >  ${'bio scaffold create'.green}`,
+            '',
+            ` - init lint                   >  ${'bio lint init [-t, --type [value]]'.green}`,
+            ` - run lint                    >  ${'bio lint [-w, --watch]'.green}`,
+            '',
+            ` - help                        >  ${'bio help'.green}\n`,
+            '',
         ].join('\n'));
     };
 
@@ -147,7 +153,6 @@ module.exports = (commander) => {
         .option('-f, --fix', 'format')
         .action((lintTarget, cmd) => {
             if (lintTarget && lintTarget === 'init') {
-                // core.hook({});
                 core.lint.init({ type: cmd.type || 'es6' });
             } else {
                 core.lint.run({ lintTarget, watch: cmd.watch, fix: cmd.fix });
