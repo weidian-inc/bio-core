@@ -15,7 +15,25 @@ module.exports = (commander) => {
 
     const CONFIG_FILE_NAME = '.biorc';
     const CURRENT_FOLDER = process.cwd();
-    const IS_CONFIG_EXISTS = fs.existsSync(path.join(CURRENT_FOLDER, CONFIG_FILE_NAME));
+    const IS_CONFIG_EXISTS = (() => {
+        const cwd = CURRENT_FOLDER;
+        const configName = CONFIG_FILE_NAME;
+        const configFile = path.join(cwd, configName);
+        const pkgFilePath = path.join(cwd, 'package.json');
+        let pkgScaffoldName = '';
+
+        try {
+            pkgScaffoldName = JSON.parse(fs.readFileSync(pkgFilePath).toString())['bio-scaffold'];
+        } catch (err) {
+            pkgScaffoldName = '';
+        }
+
+        if (!pkgScaffoldName && !fs.existsSync(configFile)) {
+            return false;
+        }
+
+        return true;
+    })();
 
     process.on('uncaughtException', (e) => {
         console.log(e);
