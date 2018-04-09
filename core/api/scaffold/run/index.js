@@ -225,6 +225,16 @@ module.exports = (currentEnv, { configName = pathUtil.configName, watch = false 
             return;
         }
 
+        // run 'npm install' when node_modules does not exist
+        if (!fs.existsSync(path.join(cwd, 'node_modules')) || !fs.readdirSync(path.join(cwd, 'node_modules')).length) {
+            try {
+                console.log('\nauto running "npm install"...\n'.green);
+                require('child_process').execSync(`cd ${cwd} && npm i`);
+            } catch (err) {
+                // console.log('auto running "npm install" failed');
+            }
+        }
+
         scaffoldName = scaffoldUtil.getFullName(scaffoldName);
         const workspaceFolder = pathUtil.getWorkspaceFolder({ cwd, scaffoldName });
 
