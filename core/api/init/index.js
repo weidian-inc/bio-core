@@ -16,13 +16,36 @@ const co = require('co');
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
 
-const writeConfigFile = function writeConfigFile({ scaffoldName, cwd }) {
+const writeConfigFile = function ({ scaffoldName, cwd }) {
     const configFilePath = path.join(cwd, pathUtil.configName);
 
-    // write cache file
-    fileUtil.writeFileSync(configFilePath, JSON.stringify({
-        scaffold: scaffoldUtil.getFullName(scaffoldName),
-    }, null, '\t'));
+    const writeFile = () => {
+        fileUtil.writeFileSync(configFilePath, JSON.stringify({
+            scaffold: scaffoldUtil.getFullName(scaffoldName),
+        }, null, '\t'));
+    };
+
+    // rewrite config file when it exists before
+    if (fs.existsSync(configFilePath)) {
+        writeFile();
+    } else { // rewrite package.json when config file does not exist before
+        const pkgFilePath = path.join(cwd, 'package.json');
+
+        // write config file when package.json does not exist before
+        if (!fs.existsSync(pkgFilePath)) {
+            writeFile();
+        } else {
+            let pkgContent = fs.readFileSync(pkgFilePath, 'utf-8');
+
+            try {
+                const obj = JSON.parse(pkgContent);
+                obj['bio-scaffold'] = scaffoldName;
+                fs.writeFileSync(pkgFilePath, JSON.stringify(obj, null, '\t'));
+            } catch (err) {
+                writeFile();
+            }
+        }
+    }
 };
 
 /**
@@ -122,13 +145,13 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
 
         const fullScaffoldName = scaffoldUtil.getFullName(chosenScaffoldName);
 
-        // write cache file to store init infomation
-        writeConfigFile({ scaffoldName: fullScaffoldName, cwd });
-
         if (fileUtil.isEmptyDir({ dir: cwd, ignored })) {
             yield downloadTemplate(cwd, fullScaffoldName);
             fileUtil.renameInvisableFiles(cwd);
         }
+
+        // write cache file to store init infomation
+        writeConfigFile({ scaffoldName: fullScaffoldName, cwd });
 
         // run npm install
         console.log('\nnpm installing...\n');

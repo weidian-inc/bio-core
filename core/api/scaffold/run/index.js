@@ -24,47 +24,33 @@ require('child-process-close');
 
 /**
  * @func
- * @desc check whether config file exists or formatted in current dir. It will throw Error when config file does not exist or formatted.
- * @param {String} cwd. current dir path
- * @param {String} configName. config file name
- */
-const checkConfig = (cwd, configName) => {
-    const configFile = path.join(cwd, configName);
-
-    if (!fs.existsSync(configFile)) {
-        throw Error(`${configName} not found in current directory, please init first.`);
-    }
-    try {
-        JSON.parse(fs.readFileSync(configFile).toString());
-    } catch (err) {
-        throw Error(`Fail to read ${configName}, please check this file content is JSON formatted `, err);
-    }
-};
-
-/**
- * @func
  * @desc get scaffold name from config file
  * @param {String} configFile. config file path
  * @return {String} scaffold name
  */
-const getScaffoldName = (configFile) => {
-    return JSON.parse(fs.readFileSync(configFile).toString()).scaffold;
-};
+const getScaffoldName = (cwd, configFile) => {
+    let pkgScaffoldName = '';
+    const pkgFilePath = path.join(cwd, 'package.json');
 
-/**
- * @func
- * @desc check whether scaffold exists in local. It will throw Error when scaffold does not exist.
- * @param {String} configFile. config file path
- * @param {String} configName. config file name
- */
-const checkScaffoldExist = (configFile, configName) => {
-    // get scaffold name
-    const scaffoldName = getScaffoldName(configFile);
-
-    // check scaffold name
-    if (!scaffoldName) {
-        throw Error(`key "scaffold" not found in ${configName}, please check.`);
+    try {
+        pkgScaffoldName = JSON.parse(fs.readFileSync(configFile).toString()).scaffold;
+    } catch (err) {
+        pkgScaffoldName = '';
     }
+
+    if (!pkgScaffoldName) {
+        try {
+            pkgScaffoldName = JSON.parse(fs.readFileSync(pkgFilePath).toString())['bio-scaffold'];
+        } catch (err) {
+            pkgScaffoldName = '';
+        }
+    }
+
+    if (!pkgScaffoldName) {
+        console.log(`\nPlease run: ${'bio init'.green} first\n`);
+    }
+
+    return pkgScaffoldName;
 };
 
 /**
@@ -233,10 +219,13 @@ module.exports = (currentEnv, { configName = pathUtil.configName, watch = false 
         const cwd = process.cwd();
         const configFile = path.join(cwd, configName);
 
-        checkConfig(cwd, configName);
-        checkScaffoldExist(configFile, configName);
+        let scaffoldName = getScaffoldName(cwd, configFile);
 
-        const scaffoldName = scaffoldUtil.getFullName(getScaffoldName(configFile));
+        if (!scaffoldName) {
+            return;
+        }
+
+        scaffoldName = scaffoldUtil.getFullName(scaffoldName);
         const workspaceFolder = pathUtil.getWorkspaceFolder({ cwd, scaffoldName });
 
         // ensure latest scaffold
