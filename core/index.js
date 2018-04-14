@@ -13,6 +13,7 @@ module.exports = {
         show: require('./api/scaffold/show/index'),
         install: require('./api/scaffold/install/index'),
         rename: require('./api/scaffold/rename/index'),
+        util: require('./api/scaffold/util/index'),
     },
 
     set: require('./api/set/index'),

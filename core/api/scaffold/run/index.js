@@ -219,7 +219,7 @@ module.exports = (currentEnv, { configName = pathUtil.configName, watch = false 
         const cwd = process.cwd();
         const configFile = path.join(cwd, configName);
 
-        let scaffoldName = getScaffoldName(cwd, configFile);
+        let scaffoldName = scaffoldUtil.getScaffoldNameFromConfigFile();
 
         if (!scaffoldName) {
             return;

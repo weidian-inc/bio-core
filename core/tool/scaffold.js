@@ -12,6 +12,7 @@ const fse = require('fs-extra');
 const mergeDirs = require('merge-dirs');
 
 const pathUtil = require('./path');
+const fileUtil = require('./file');
 const npm = require('./npm');
 
 const getNpmPackageVersion = require('get-npm-package-version');
@@ -65,6 +66,83 @@ module.exports = {
     checkOutdated: true,
 
     preInstall() {},
+
+    writeScaffoldConfigFile({ scaffoldName }) {
+        const cwd = process.cwd();
+
+        /**
+         * 1. .biorc will be read firstly
+         * 2. package.json "bio-scaffold" will be read secondly
+         */
+        const stage0Config = path.join(cwd, pathUtil.configName);
+        const stage1Config = path.join(cwd, 'package.json');
+
+        const isPkgConfiged = (pkgFilePath) => {
+            try {
+                const pkgContent = fs.readFileSync(pkgFilePath, 'utf-8');
+                const obj = JSON.parse(pkgContent);
+                if (obj['bio-scaffold']) {
+                    return true;
+                }
+            } catch (err) {
+                return false;
+            }
+        };
+
+        const writeFile = () => {
+            fileUtil.writeFileSync(stage0Config, JSON.stringify({
+                scaffold: this.getFullName(scaffoldName),
+            }, null, '\t'));
+        };
+
+        if (fs.existsSync(stage0Config)) {
+            writeFile();
+        } else { // then write package.json
+            if (fs.existsSync(stage1Config)) {
+                const pkgContent = fs.readFileSync(stage1Config, 'utf-8');
+
+                try {
+                    const obj = JSON.parse(pkgContent);
+                    obj['bio-scaffold'] = scaffoldName;
+                    fs.writeFileSync(stage1Config, JSON.stringify(obj, null, '\t'));
+                } catch (err) {
+                    writeFile();
+                }
+            } else {
+                writeFile();
+            }
+        }
+    },
+
+    getScaffoldNameFromConfigFile() {
+        const cwd = process.cwd();
+        let scaffoldName = '';
+
+        const stage0Config = path.join(cwd, pathUtil.configName);
+        const stage1Config = path.join(cwd, 'package.json');
+
+        // prefer .biorc
+        try {
+            scaffoldName = JSON.parse(fs.readFileSync(stage0Config).toString()).scaffold;
+        } catch (err) {
+
+        }
+
+        // then get package.json "bio-scaffold"
+        if (!scaffoldName) {
+            try {
+                scaffoldName = JSON.parse(fs.readFileSync(stage1Config).toString())['bio-scaffold'];
+            } catch (err) {
+
+            }
+        }
+
+        if (!scaffoldName) {
+            console.log('\nno scaffold info found at current directory, please run "bio init <scaffoldName>" first\n'.red);
+        }
+
+        return scaffoldName;
+    },
 
     getFullName(scaffoldName) {
         const maps = getMaps(this.scaffoldList);
