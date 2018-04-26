@@ -7,10 +7,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const sh = require('shelljs');
 const co = require('co');
 const { red, green } = require('chalk');
 const chokidar = require('chokidar');
+const inquirer = require('inquirer');
 
 const fse = require('fs-extra');
 
@@ -21,15 +21,26 @@ const cwd = process.cwd();
 const eslint = require('../lib/eslint/index');
 const stylelint = require('../lib/stylelint/index');
 
-let globalParams;
-
-function initParams(params) {
-    globalParams = {
-        ...params,
+let globalParams = {
         finalLintTarget: cwd,
         stylelintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.html'),
         eslintResultSrcFile: path.resolve(cwd, 'lint-result', 'eslint-result-src.html'),
         lintResultIndexFile: path.resolve(cwd, 'lint-result', 'lint-result-index.html'),
+    };
+
+function chooseInitType() {
+    return (done) => {
+        inquirer.prompt([{
+            type: 'list',
+            name: 'initType',
+            message: 'select your lint type',
+            choices: [
+                'es6',
+                'es5',
+            ],
+        }]).then((answers) => {
+            done(null, answers.initType);
+        });
     };
 }
 
@@ -39,8 +50,8 @@ function initParams(params) {
  */
 module.exports = (params) => {
     co(function* init() {
-        // { lintTarget, watch, fix } = params
-        initParams(params);
+        const initType = yield chooseInitType();
+        globalParams = { ...globalParams, type: initType };
 
         const { stylelintResultSrcFile, eslintResultSrcFile, lintResultIndexFile } = globalParams;
 
@@ -50,12 +61,12 @@ module.exports = (params) => {
 
         // 初始化配置文件
         console.log(green('\ncreating config files\n'));
-        yield eslint.initConfigFiles(params);
-        yield stylelint.initConfigFiles(params);
+        yield eslint.initConfigFiles({ type: initType });
+        yield stylelint.initConfigFiles({ type: initType });
 
         // 安装相应依赖
         console.log(green('\ncheck dependecies\n'));
-        eslint.installDependencies(params);
+        eslint.installDependencies({ type: initType });
         stylelint.installDependencies();
 
         // 添加 Hook

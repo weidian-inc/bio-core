@@ -146,12 +146,11 @@ module.exports = (commander) => {
     commander
         .command('lint [lintTarget]')
         .description('lint.')
-        .option('-t, --type [value]', 'init type, such as es6/es5')
         .option('-w, --watch', 'watch')
         .option('-f, --fix', 'format')
         .action((lintTarget, cmd) => {
             if (lintTarget && lintTarget === 'init') {
-                core.lint.init({ type: cmd.type || 'es6' });
+                core.lint.init();
             } else {
                 core.lint.run({ lintTarget, watch: cmd.watch, fix: cmd.fix });
             }
