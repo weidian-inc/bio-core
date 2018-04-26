@@ -82,5 +82,5 @@
     "test": "istanbul cover _mocha test/*",
     "coverage": "cat ./coverage/lcov.info | coveralls"
   },
-  "version": "1.0.16"
+  "version": "1.0.17"
 }

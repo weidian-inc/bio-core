@@ -341,7 +341,8 @@ module.exports = {
         
                 this.moveScaffoldCache(scaffoldName);
             } catch (err) {
-                throw Error(err);
+                // throw Error(err);
+                console.log(`\nrun "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}" failed and skipped\n`.red);
             }
         }
     },

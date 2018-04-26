@@ -154,11 +154,15 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
         scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
 
         // run npm install
-        console.log('\nnpm installing...\n');
+        console.log('\nauto running: "npm install"\n'.green);
         if (fs.existsSync(path.join(cwd, 'package.json'))) {
-            require('child_process').execSync(`cd ${cwd} && npm install`, {
-                stdio: 'inherit'
-            });
+            try {
+                require('child_process').execSync(`cd ${cwd} && npm install`, {
+                    stdio: 'inherit'
+                });
+            } catch(err) {
+                console.log('auto run "npm install" failed, skip'.yellow);
+            }
         }
 
         console.log('\nInit project successfully!\n');
