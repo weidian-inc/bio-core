@@ -2,7 +2,7 @@
 
 ## Description
 
-This is the core module of [bio](https://github.com/weidian-inc/bio-cli).
+This is the core module of [bio-cli](https://github.com/weidian-inc/bio-cli).
 
 You don't need to use it independently.
 
