@@ -79,20 +79,6 @@ function watchFiles(fileChangeCallback) {
     return chokidarWatcher;
 }
 
-let globalParams;
-
-function initParams(params) {
-    const { lintTarget } = params;
-    globalParams = {
-        ...params,
-        finalLintTarget: lintTarget ? path.resolve(cwd, lintTarget) : cwd,
-        stylelintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.html'),
-        eslintResultSrcFile: path.resolve(cwd, 'lint-result', 'eslint-result-src.html'),
-        statusResultSrcFile: path.resolve(cwd, 'lint-result', 'status-result-src.html'),
-        lintResultIndexFile: path.resolve(cwd, 'lint-result', 'lint-result-index.html'),
-    };
-}
-
 
 function writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile }) {
     const eslintTxt = eslintExitCode ? '<span style="color:#B84C4B">eslint unpassed!</span>' : '<span style="color:#478749">eslint passed!</span>';
@@ -104,21 +90,19 @@ function writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFil
  * @func
  * @desc lint
  */
-module.exports = (params) => {
-    // { lintTarget, watch, fix } = params
-    initParams(params);
-
-    const { finalLintTarget, stylelintResultSrcFile, statusResultSrcFile, eslintResultSrcFile, lintResultIndexFile, watch } = globalParams;
-
-    let port = null;
+module.exports = ({ lintTarget, watch, fix }) => {
+    const stylelintResultSrcFile = path.resolve(cwd, 'lint-result', 'stylelint-result-src.html');
+    const eslintResultSrcFile = path.resolve(cwd, 'lint-result', 'eslint-result-src.html');
+    const statusResultSrcFile = path.resolve(cwd, 'lint-result', 'status-result-src.html');
+    const lintResultIndexFile = path.resolve(cwd, 'lint-result', 'lint-result-index.html');
 
     // 创建结果页面
     fse.ensureFileSync(lintResultIndexFile);
-    fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port }));
+    fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port: null }));
 
     if (watch) {
         // 启动 socket server
-        port = 3000;
+        const port = 3000;
         const io = require('socket.io')(port);
 
         // 初始化结果页面（带监听器）
@@ -174,8 +158,8 @@ module.exports = (params) => {
     }
 
     // 初始化参数
-    eslint.initParams({ ...globalParams });
-    stylelint.initParams({ ...globalParams });
+    eslint.initParams({ fix, lintTarget });
+    stylelint.initParams({ fix, lintTarget });
 
     // run
     console.log(green('\nrunning lint\n'));

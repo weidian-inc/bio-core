@@ -155,7 +155,11 @@ module.exports = (commander) => {
             if (lintTarget && lintTarget === 'init') {
                 core.lint.init();
             } else {
-                core.lint.run({ lintTarget, watch: cmd.watch, fix: cmd.fix });
+                core.lint.run({
+                    lintTarget, 
+                    watch: cmd.watch, 
+                    fix: cmd.fix 
+                });
             }
         });
 

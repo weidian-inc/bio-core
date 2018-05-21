@@ -6,8 +6,9 @@ const { red, green } = require('chalk');
 
 function ensureModule(packageNames, cwd) {
     if (!fs.existsSync(path.join(cwd, 'package.json'))) {
-        console.log(red(`\npackage.json is not found, skip installing dependencies (via 'npm install'): \n\n-- ${packageNames.join('\n-- ')}\n`));
-        return;
+        // console.log(red(`\npackage.json is not found, skip installing dependencies (via 'npm install'): \n\n-- ${packageNames.join('\n-- ')}\n`));
+        console.log('\nlint configuration was stopped because there is no formated package.json file found here.\n'.red);
+        process.exit(1);
     }
 
     const uninstalled = [];
@@ -26,6 +27,8 @@ function ensureModule(packageNames, cwd) {
         });
         console.log('\ninstallation done.\n');
     }
+
+    return 0;
 }
 
 function confirm(fileName) {
