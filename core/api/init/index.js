@@ -102,8 +102,8 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
     // get demo from scaffold
     const targetTemplateDirPath = yield getTemplateDirPath(scaffoldName);
     if (targetTemplateDirPath === '') {
-        console.log(`Scaffold ${scaffoldName} does not has demo files, please contact the scaffold author to add demo files.`);
-        return;
+        console.log(`\nScaffold "${scaffoldName}" (npm package name) has no demo files. \n\nPlease contact the scaffold author to add demo files or check whether you've input the right scaffold name.\n`.red);
+        return false;
     }
 
     // copy template to cwd
@@ -111,6 +111,8 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
         overwrite: true,
         errorOnExist: false,
     });
+
+    return true;
 };
 
 const choseScaffold = () => {
@@ -146,8 +148,12 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
         const fullScaffoldName = scaffoldUtil.getFullName(chosenScaffoldName);
 
         if (fileUtil.isEmptyDir({ dir: cwd, ignored })) {
-            yield downloadTemplate(cwd, fullScaffoldName);
+            const isSuccessful = yield downloadTemplate(cwd, fullScaffoldName);
             fileUtil.renameInvisableFiles(cwd);
+
+            if (!isSuccessful) {
+                return;
+            }
         }
 
         // write cache file to store init infomation
