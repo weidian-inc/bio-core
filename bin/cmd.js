@@ -1,10 +1,13 @@
 module.exports = (commander) => {
     require('colors');
 
-    const nodeVersion = process.version.replace('v', '');
-    if (nodeVersion.split('.')[0] < 8) {
-        console.log(`\nNode version 8.9.1+ is required for bio (current version is ${nodeVersion}), please upgrade your node.\n`.red);
-        return;
+    const semver = require('semver');
+    const requiredVersion = require('../package.json').engines.node
+
+    if (!semver.satisfies(process.version, requiredVersion)) {
+        console.log(
+            `\nYou are using Node ${process.version}, but this version of bio-cli requires Node ${requiredVersion}.\nPlease upgrade your Node version.\n`.yellow)
+        process.exit(1)
     }
 
     const fs = require('fs');
