@@ -16,6 +16,7 @@ const inquirer = require('inquirer');
 const cwd = process.cwd();
 
 const typescript = require('./lib/typescript/index');
+const node = require('./lib/node/index');
 
 const select = () => {
     return (done) => {
@@ -24,7 +25,8 @@ const select = () => {
             name: 'name',
             message: 'Select unitest type',
             choices: [
-                'typescript'
+                'typescript unitest',
+                'node unitest'
             ]
         }]).then((answers) => {
             done(null, answers.name);
@@ -39,8 +41,10 @@ const select = () => {
 module.exports = (params) => {
     co(function* init() {
         const typename = yield select();
-        if (typename === 'typescript') {
+        if (typename === 'typescript unitest') {
             yield typescript.init();
+        } else if (typename === 'node unitest') {
+            yield node.init();
         }
     });
 };
