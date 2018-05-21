@@ -112,6 +112,8 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
         errorOnExist: false,
     });
 
+    console.log('\nproject files created successfully !'.green);
+
     return true;
 };
 
@@ -154,6 +156,8 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
             if (!isSuccessful) {
                 return;
             }
+        } else {
+            console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
         }
 
         // write cache file to store init infomation
