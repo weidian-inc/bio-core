@@ -43,7 +43,7 @@ function* initStylelint() {
     eslint.initParams();
 
     // 安装相应依赖
-    console.log(green('\ninstalling stylelint dependecies...'));
+    console.log(green('\ninstalling stylelint dependencies...'));
     stylelint.installDependencies();
 
     // 初始化配置文件
@@ -58,7 +58,7 @@ function* initEslint({ initType }) {
     eslint.initParams();
 
     // 安装相应依赖
-    console.log(green('\ninstalling eslint dependecies'));
+    console.log(green('\ninstalling eslint dependencies'));
     eslint.installDependencies({ type: initType });
 
     // 初始化配置文件
