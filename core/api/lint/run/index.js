@@ -169,6 +169,6 @@ module.exports = ({ lintTarget, watch, fix }) => {
     console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed！'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed！'));
     writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
     ncp.copy(lintResultIndexFile, () => {
-        console.log(green(`\nresult page has be created and url was copied, you can paste directly to browser address area to see result: ${lintResultIndexFile}\n`));
+        console.log((`\nresult page (url has been copied):\n\n${lintResultIndexFile.green}\n`));
     });
 };
