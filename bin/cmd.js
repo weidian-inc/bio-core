@@ -6,7 +6,7 @@ module.exports = (commander) => {
 
     if (!semver.satisfies(process.version, requiredVersion)) {
         console.log(
-            `\nYou are using Node ${process.version}, but this version of vbuilder-cli requires Node ${requiredVersion}.\nPlease upgrade your Node version.\n`.yellow)
+            `\nYou are using Node ${process.version}, but this version of bio-cli requires Node ${requiredVersion}.\nPlease upgrade your Node version.\n`.yellow)
         process.exit(1)
     }
 
