@@ -81,9 +81,20 @@ function watchFiles(fileChangeCallback) {
 
 
 function writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile }) {
-    const eslintTxt = eslintExitCode ? '<span style="color:#B84C4B">eslint unpassed!</span>' : '<span style="color:#478749">eslint passed!</span>';
-    const stylelintTxt = stylelintExitCode ? '<span style="color:#B84C4B">stylelint unpassed</span>' : '<span style="color:#478749">stylelint passed！</span>';
+    const eslintTxt = eslintExitCode 
+                        ? 
+                        '<span style="color:#B84C4B">eslint unpassed!</span>' 
+                        : 
+                        '<span style="color:#478749">eslint passed!</span>';
+
+    const stylelintTxt = stylelintExitCode 
+                        ? 
+                        '<span style="color:#B84C4B">stylelint unpassed</span>' 
+                        : 
+                        '<span style="color:#478749">stylelint passed！</span>';
+
     const txt = `${eslintTxt} ${eslintExitCode || stylelintExitCode ? '╮(╯_╰)╭' : 'd=(￣▽￣*)b'} ${stylelintTxt}`;
+    
     fse.writeFileSync(statusResultSrcFile, `<p style="text-align:center;font-size: 30px;">${txt}</p>`);
 }
 /**
