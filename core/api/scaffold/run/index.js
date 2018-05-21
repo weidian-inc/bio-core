@@ -87,6 +87,11 @@ const runSyncDirectory = (from, to, { watch }) => {
 const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName }) => {
     const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
 
+    if (!fs.existsSync(path.join(scaffoldFolder, 'bio-entry.js'))) {
+        console.log(`\nScaffold ${scaffoldName.green}'s entry file ${'bio-entry.js'.green} is not found, please check whethor you've inited project with the right scaffold.\n`);
+        process.exit(1);
+    }
+
     const child = require('child_process').fork('bio-entry.js', [
         `taskName=${currentEnv}`,
         `userDir=${cwd}`,

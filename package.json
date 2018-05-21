@@ -41,6 +41,7 @@
     "readdir-enhanced": "^1.5.2",
     "recursive-readdir-sync": "^1.0.6",
     "registry-url": "^3.1.0",
+    "semver": "^5.5.0",
     "shelljs": "^0.8.1",
     "socket.io": "^2.0.4",
     "sync-directory": "^1.0.1",
@@ -64,7 +65,7 @@
     "mocha": "^3.5.3"
   },
   "engines": {
-    "node": ">=8.9.1"
+    "node": ">=8.9.4"
   },
   "homepage": "https://github.com/weidian-inc/bio-core",
   "keywords": [

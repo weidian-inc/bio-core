@@ -112,7 +112,7 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
         errorOnExist: false,
     });
 
-    console.log('\nproject files created successfully !'.green);
+    console.log('\nproject files created successfully!'.green);
 
     return true;
 };
@@ -174,6 +174,8 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
                 console.log('auto run "npm install" failed, skip'.yellow);
             }
         }
+
+        console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
 
         console.log('\nInit project successfully!\n');
     });
