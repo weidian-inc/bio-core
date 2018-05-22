@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const fse = require('fs-extra');
-const inquirer = require('inquirer');
-const { red, green } = require('chalk');
+const { red } = require('chalk');
 
 function ensureModule(packageNames, cwd) {
     if (!fs.existsSync(path.join(cwd, 'package.json'))) {

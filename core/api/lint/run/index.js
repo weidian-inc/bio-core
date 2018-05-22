@@ -7,7 +7,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const sh = require('shelljs');
 const { red, green } = require('chalk');
 const chokidar = require('chokidar');
 const anymatch = require('anymatch');
@@ -26,7 +25,7 @@ function watchFiles(fileChangeCallback) {
         persistent: true,
         alwaysStat: true,
         interval: 300,
-        ignored: /(lint\-result)|(\.git)|(\.ds_store)|(node_modules)|(stats\.json)|(build)/i,
+        ignored: /(lint-result)|(\.git)|(\.ds_store)|(node_modules)|(stats\.json)|(build)/i,
     });
 
 
@@ -79,52 +78,47 @@ function watchFiles(fileChangeCallback) {
     return chokidarWatcher;
 }
 
-let globalParams;
-
-function initParams(params) {
-    const { lintTarget } = params;
-    globalParams = {
-        ...params,
-        finalLintTarget: lintTarget ? path.resolve(cwd, lintTarget) : cwd,
-        stylelintResultSrcFile: path.resolve(cwd, 'lint-result', 'stylelint-result-src.html'),
-        eslintResultSrcFile: path.resolve(cwd, 'lint-result', 'eslint-result-src.html'),
-        statusResultSrcFile: path.resolve(cwd, 'lint-result', 'status-result-src.html'),
-        lintResultIndexFile: path.resolve(cwd, 'lint-result', 'lint-result-index.html'),
-    };
-}
-
 
 function writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile }) {
-    const eslintTxt = eslintExitCode ? '<span style="color:#B84C4B">eslint unpassed!</span>' : '<span style="color:#478749">eslint passed!</span>';
-    const stylelintTxt = stylelintExitCode ? '<span style="color:#B84C4B">stylelint unpassed</span>' : '<span style="color:#478749">stylelint passed！</span>';
+    const eslintTxt = eslintExitCode 
+                        ? 
+                        '<span style="color:#B84C4B">eslint unpassed!</span>' 
+                        : 
+                        '<span style="color:#478749">eslint passed!</span>';
+
+    const stylelintTxt = stylelintExitCode 
+                        ? 
+                        '<span style="color:#B84C4B">stylelint unpassed</span>' 
+                        : 
+                        '<span style="color:#478749">stylelint passed！</span>';
+
     const txt = `${eslintTxt} ${eslintExitCode || stylelintExitCode ? '╮(╯_╰)╭' : 'd=(￣▽￣*)b'} ${stylelintTxt}`;
+
     fse.writeFileSync(statusResultSrcFile, `<p style="text-align:center;font-size: 30px;">${txt}</p>`);
 }
 /**
  * @func
  * @desc lint
  */
-module.exports = (params) => {
-    // { lintTarget, watch, fix } = params
-    initParams(params);
-
-    const { finalLintTarget, stylelintResultSrcFile, statusResultSrcFile, eslintResultSrcFile, lintResultIndexFile, watch } = globalParams;
-
-    let port = null;
+module.exports = ({ lintTarget, watch, fix }) => {
+    const stylelintResultSrcFile = path.resolve(cwd, 'lint-result', 'stylelint-result-src.html');
+    const eslintResultSrcFile = path.resolve(cwd, 'lint-result', 'eslint-result-src.html');
+    const statusResultSrcFile = path.resolve(cwd, 'lint-result', 'status-result-src.html');
+    const lintResultIndexFile = path.resolve(cwd, 'lint-result', 'lint-result-index.html');
 
     // 创建结果页面
     fse.ensureFileSync(lintResultIndexFile);
-    fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port }));
+    fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port: null }));
 
     if (watch) {
         // 启动 socket server
-        port = 3000;
+        const port = 3000;
         const io = require('socket.io')(port);
 
         // 初始化结果页面（带监听器）
         fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port }));
 
-        const chokidarWatcher = watchFiles((changedFile) => {
+        const chokidarWatcher = watchFiles(() => {
             console.log('Lint Running...');
 
             // 更新页面状态
@@ -174,17 +168,34 @@ module.exports = (params) => {
     }
 
     // 初始化参数
-    eslint.initParams({ ...globalParams });
-    stylelint.initParams({ ...globalParams });
+    eslint.initParams({ fix, lintTarget });
+    stylelint.initParams({ fix, lintTarget });
 
     // run
-    console.log(green('\nrunning lint\n'));
+    console.log(green('\nrunning lint...\n'));
     const eslintExitCode = eslint.exec();
     const stylelintExitCode = stylelint.exec();
 
-    console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed！'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed！'));
-    writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
-    ncp.copy(lintResultIndexFile, () => {
-        console.log(green(`\nresult page has be created and url was copied, you can paste directly to browser address area to see result: ${lintResultIndexFile}\n`));
-    });
+    if (eslintExitCode === 999) {
+        console.log('eslint config missing'.red);
+    }
+
+    if (stylelintExitCode === 999) {
+        console.log('stylelint config missing'.red);
+    }
+
+    // if (eslintExitCode === 999 && stylelintExitCode !== 999) {
+        // console.log('只有 stylelint');
+    // } else if (eslintExitCode !== 999 && stylelintExitCode === 999) {
+        // console.log('只有 eslint');
+    // } else if (eslintExitCode !== 999 && stylelintExitCode !== 999) {
+    if (eslintExitCode !== 999 || stylelintExitCode !== 999) {
+        console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed!'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed!'));
+        writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
+        ncp.copy(lintResultIndexFile, () => {
+            console.log((`\nresult page (url has been copied):\n\n${lintResultIndexFile.green}\n`));
+        });
+    } else if (eslintExitCode === 999 && stylelintExitCode === 999) {
+        console.log('\nno lint config found.\n'.red);
+    }
 };

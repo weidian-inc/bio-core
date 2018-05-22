@@ -16,38 +16,6 @@ const co = require('co');
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
 
-const writeConfigFile = function ({ scaffoldName, cwd }) {
-    const configFilePath = path.join(cwd, pathUtil.configName);
-
-    const writeFile = () => {
-        fileUtil.writeFileSync(configFilePath, JSON.stringify({
-            scaffold: scaffoldUtil.getFullName(scaffoldName),
-        }, null, '\t'));
-    };
-
-    // rewrite config file when it exists before
-    if (fs.existsSync(configFilePath)) {
-        writeFile();
-    } else { // rewrite package.json when config file does not exist before
-        const pkgFilePath = path.join(cwd, 'package.json');
-
-        // write config file when package.json does not exist before
-        if (!fs.existsSync(pkgFilePath)) {
-            writeFile();
-        } else {
-            let pkgContent = fs.readFileSync(pkgFilePath, 'utf-8');
-
-            try {
-                const obj = JSON.parse(pkgContent);
-                obj['bio-scaffold'] = scaffoldName;
-                fs.writeFileSync(pkgFilePath, JSON.stringify(obj, null, '\t'));
-            } catch (err) {
-                writeFile();
-            }
-        }
-    }
-};
-
 /**
  * @thunk function
  * @desc get template path

@@ -48,6 +48,8 @@ module.exports = (commander) => {
             ` - help                        >  ${'bio help'.green}\n`,
             '',
         ].join('\n'));
+
+        console.log(`doc: ${'https://github.com/weidian-inc/bio-cli'.green}\n`);
     };
 
     core.set({
@@ -155,7 +157,11 @@ module.exports = (commander) => {
             if (lintTarget && lintTarget === 'init') {
                 core.lint.init();
             } else {
-                core.lint.run({ lintTarget, watch: cmd.watch, fix: cmd.fix });
+                core.lint.run({
+                    lintTarget, 
+                    watch: cmd.watch, 
+                    fix: cmd.fix 
+                });
             }
         });
 

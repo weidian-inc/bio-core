@@ -7,11 +7,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const sh = require('shelljs');
-const { red, green } = require('chalk');
-
-const pathUtil = require('../../../../tool/path');
-const fileUtil = require('../../../../tool/file');
 
 const util = require('../util');
 
@@ -24,14 +19,14 @@ function* initConfigFiles({ type }) {
         return util.copyTpt(path.join(__dirname, templatePath), cwd);
     }
     switch (type) {
-    case 'es6':
+    case 'js:es6':
         yield cpTpt('template-es6');
         break;
-    case 'es5':
+    case 'js:es5':
         yield cpTpt('template-es5');
         break;
     default:
-        console.log(red('unkown type'));
+        break;
     }
 }
 
@@ -48,27 +43,27 @@ function installDependencies({ type }) {
 
     let modules;
     switch (type) {
-    case 'es5':
-        modules = es5Module;
-        break;
-    default:
-        modules = es6Module;
+        case 'js:es5':
+            modules = es5Module;
+            break;
+        case 'js:es6':
+            modules = es6Module;
+            break;
+        default:
+            modules = es6Module;
     }
-    util.ensureModule(
-        modules
-        , cwd,
-    );
+    return util.ensureModule( modules, cwd );
 }
 
-function execLint({ finalLintTarget, lintResultSrcFile, fix }) {
+function execLint({ lintTarget = cwd, lintResultSrcFile, fix }) {
     if (!fs.existsSync(path.join(cwd, 'node_modules/eslint/lib/cli.js'))) {
-        console.log(red(`\nError: eslint is required but not installed, please run ${green('bio lint init')} first\n`));
+        // console.log(red(`\nError: eslint is required but not installed, please run ${green('bio lint init')} first\n`));
         return 999; // exitCode
     }
 
     const eslintCliPath = path.join(cwd, 'node_modules/eslint/lib/cli.js');
     const eslintCli = require(eslintCliPath);
-    const eslintOrder = ['', '', finalLintTarget, '--format', 'html', '--ext', 'vue,js', '--output-file', lintResultSrcFile];
+    const eslintOrder = ['', '', lintTarget, '--format', 'html', '--ext', 'vue,js', '--output-file', lintResultSrcFile];
 
     // 准备结果文件
     fse.ensureFileSync(lintResultSrcFile);
@@ -85,8 +80,8 @@ let globalParams;
  * @desc lint
  */
 module.exports = {
-    initParams(params) {
-        globalParams = { ...params, lintResultSrcFile: path.resolve(cwd, 'lint-result', 'eslint-result-src.html') };
+    initParams({ fix = false, lintTarget = cwd } = { }) {
+        globalParams = { fix, lintTarget };
     },
 
     initConfigFiles,
@@ -94,7 +89,8 @@ module.exports = {
     installDependencies,
 
     exec() {
-        const { finalLintTarget, lintResultSrcFile, fix } = globalParams;
-        return execLint({ finalLintTarget, lintResultSrcFile, fix });
+        const lintResultSrcFile = path.resolve(cwd, 'lint-result', 'eslint-result-src.html');
+        const { fix, lintTarget } = globalParams;
+        return execLint({ lintTarget, lintResultSrcFile, fix });
     },
 };

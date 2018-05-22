@@ -77,18 +77,6 @@ module.exports = {
         const stage0Config = path.join(cwd, pathUtil.configName);
         const stage1Config = path.join(cwd, 'package.json');
 
-        const isPkgConfiged = (pkgFilePath) => {
-            try {
-                const pkgContent = fs.readFileSync(pkgFilePath, 'utf-8');
-                const obj = JSON.parse(pkgContent);
-                if (obj['bio-scaffold']) {
-                    return true;
-                }
-            } catch (err) {
-                return false;
-            }
-        };
-
         const writeFile = () => {
             fileUtil.writeFileSync(stage0Config, JSON.stringify({
                 scaffold: this.getFullName(scaffoldName),
@@ -125,7 +113,7 @@ module.exports = {
         try {
             scaffoldName = JSON.parse(fs.readFileSync(stage0Config).toString()).scaffold;
         } catch (err) {
-
+            // eslint-disable-no-empty
         }
 
         // then get package.json "bio-scaffold"
@@ -133,7 +121,7 @@ module.exports = {
             try {
                 scaffoldName = JSON.parse(fs.readFileSync(stage1Config).toString())['bio-scaffold'];
             } catch (err) {
-
+                // eslint-disable-no-empty
             }
         }
 
@@ -308,8 +296,6 @@ module.exports = {
     installScaffold(scaffoldName, options) {
         const { async } = options;
         const execInstallFolder = pathUtil.getScaffoldExecInstallFolder(scaffoldName);
-        const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
-        const scaffoldWrapper = pathUtil.getScaffoldWrapper(scaffoldName);
         const child = require('child_process');
 
         const hopedVersion = this.getHopedVersion(scaffoldName);
@@ -324,7 +310,7 @@ module.exports = {
         const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}`;
 
         if (async) {
-            child.exec(order, (error, stdout, stderr) => {
+            child.exec(order, (error) => {
                 if (error) {
                     // remove exec dir
                     fse.removeSync(execInstallFolder);

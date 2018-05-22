@@ -1,4 +1,4 @@
-{
+module.exports = {
     "root": true,
     "env": {
         "commonjs": true,
@@ -91,3 +91,4 @@
         "eqeqeq": 1
     }
 }
+

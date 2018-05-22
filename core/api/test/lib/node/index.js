@@ -9,9 +9,7 @@ const util = require('../../util');
 
 const TEST_SCRIPT_NAME = 'test';
 const TEST_DIR_NAME = 'test';
-const TEST_DEMO_FILE_NAME = 'demo.spec.ts';
-
-const MOCHA_OPTS_FILE = 'mocha.opts';
+const TEST_DEMO_FILE_NAME = 'demo.spec.js';
 
 const TEST_DIR = path.join(cwd, TEST_DIR_NAME);
 
@@ -20,7 +18,7 @@ const setNewTestScriptName = () => {
         inquirer.prompt([{
             type: 'confirm',
             name: TEST_SCRIPT_NAME,
-            message: `script ${TEST_SCRIPT_NAME} is found at "package.json/scripts", do you want it be covered?`
+            message: `script "${TEST_SCRIPT_NAME.green}" is found at "package.json/scripts", do you want to rename it?`
         }]).then((answers) => {
             if (answers.confirm) {
                 done(null, TEST_SCRIPT_NAME);
@@ -42,7 +40,7 @@ const existsTestFiles = (dirPath) => {
     const files = fs.readdirSync(dirPath);
 
     for (let i = 0, len = files.length; i < len; i++) {
-        if (/\.spec\.ts/.test(files[i])) {
+        if (/\.spec\.js/.test(files[i])) {
             return true;
         }
     }
@@ -76,29 +74,13 @@ module.exports = {
         }
 
         // ask new script name
-        console.log('\npackage.json "scripts"\n');
+        // console.log('\npackage.json "scripts"\n');
         const testScriptName = pkgObj.scripts[TEST_SCRIPT_NAME] ? yield setNewTestScriptName() : TEST_SCRIPT_NAME;
-        pkgObj.scripts[testScriptName] = 'nyc mocha && open coverage/index.html';
+        pkgObj.scripts[testScriptName] = 'istanbul cover _mocha test/*';
 
         // rewite package.json
         // add nyc
         console.log(`\n"${testScriptName.green}" was added in "package.json/scripts"\n`);
-        pkgObj.nyc = {
-            "extension": [
-                ".ts",
-                ".tsx"
-            ],
-            "exclude": [
-                "**/*.d.ts",
-                "coverage/**",
-                "test/**"
-            ],
-            "reporter": [
-                "text-summary",
-                "html"
-            ],
-            "all": true
-        };
 
         fs.writeFileSync(pkgPath, JSON.stringify(pkgObj, null, 4));
 
@@ -109,26 +91,15 @@ module.exports = {
             fse.copySync(path.join(__dirname, `./demo/${TEST_DEMO_FILE_NAME}`), path.join(TEST_DIR, TEST_DEMO_FILE_NAME));
         }
 
-        if (!fs.existsSync(path.join(TEST_DIR, MOCHA_OPTS_FILE))) {
-            fse.copySync(path.join(__dirname, `demo/${MOCHA_OPTS_FILE}`), path.join(TEST_DIR, MOCHA_OPTS_FILE));
-        }
-
         util.ensureModule([
-            '@types/chai',
-            '@types/mocha',
             'chai',
+            'istanbul',
             'mocha',
-            'nyc',
-            'rewire',
-            'source-map-support',
-            'supertest',
-            'ts-node',
-            'typescript'
         ], cwd);
 
         console.log('');
         console.log([
-            'typescript unitest confiuration done!',
+            'node unitest confiuration done!',
             '',
             `1. run test: npm run ${testScriptName}`,
             `2. test dir: ${'./test/'}`
