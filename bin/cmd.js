@@ -48,6 +48,8 @@ module.exports = (commander) => {
             ` - help                        >  ${'bio help'.green}\n`,
             '',
         ].join('\n'));
+
+        console.log(`doc: ${'https://github.com/weidian-inc/bio-cli'.green}\n`);
     };
 
     core.set({
