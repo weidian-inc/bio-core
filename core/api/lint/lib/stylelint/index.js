@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const sh = require('shelljs');
-const { red, green } = require('chalk');
+const { red } = require('chalk');
 
 
 const util = require('../util');
@@ -39,7 +39,7 @@ function execLint({ lintTarget, lintResultSrcFile, fix }) {
         return 999; // exitCode
     }
 
-    const lintedFiles = `"${path.join(cwd, '**/*.css')}" "${path.join(cwd, '**/*.less')}" "${path.join(cwd, '**/*.scss')}" "${path.join(cwd, '**/*.sass')}" "${path.join(cwd, '**/*.vue')}"`;
+    const lintedFiles = `"${path.join(lintTarget, '**/*.css')}" "${path.join(lintTarget, '**/*.less')}" "${path.join(lintTarget, '**/*.scss')}" "${path.join(lintTarget, '**/*.sass')}" "${path.join(lintTarget, '**/*.vue')}"`;
     const order = `${cwd}/node_modules/stylelint/bin/stylelint.js ${lintedFiles} ${fix ? '--fix' : ''} --cache --cache-location ${path.join(path.dirname(lintResultSrcFile), '.stylelintcache')} -f string --custom-formatter ${cwd}/node_modules/stylelint-formatter-html --syntax less > ${lintResultSrcFile}`;
 
     // 准备结果文件

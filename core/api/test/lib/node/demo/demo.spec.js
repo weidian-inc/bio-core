@@ -1,7 +1,3 @@
-const fse = require('fs-extra');
-const path = require('path');
-const fs = require('fs');
-
 const { expect } = require('chai');
 
 const add = (a, b) => {

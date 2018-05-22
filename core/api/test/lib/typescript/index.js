@@ -15,7 +15,7 @@ const MOCHA_OPTS_FILE = 'mocha.opts';
 
 const TEST_DIR = path.join(cwd, TEST_DIR_NAME);
 
-const setNewTestScriptName = (name) => {
+const setNewTestScriptName = () => {
     return (done) => {
         inquirer.prompt([{
             type: 'confirm',

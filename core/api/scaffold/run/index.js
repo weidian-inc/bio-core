@@ -24,37 +24,6 @@ require('child-process-close');
 
 /**
  * @func
- * @desc get scaffold name from config file
- * @param {String} configFile. config file path
- * @return {String} scaffold name
- */
-const getScaffoldName = (cwd, configFile) => {
-    let pkgScaffoldName = '';
-    const pkgFilePath = path.join(cwd, 'package.json');
-
-    try {
-        pkgScaffoldName = JSON.parse(fs.readFileSync(configFile).toString()).scaffold;
-    } catch (err) {
-        pkgScaffoldName = '';
-    }
-
-    if (!pkgScaffoldName) {
-        try {
-            pkgScaffoldName = JSON.parse(fs.readFileSync(pkgFilePath).toString())['bio-scaffold'];
-        } catch (err) {
-            pkgScaffoldName = '';
-        }
-    }
-
-    if (!pkgScaffoldName) {
-        console.log(`\nPlease run: ${'bio init'.green} first\n`);
-    }
-
-    return pkgScaffoldName;
-};
-
-/**
- * @func
  * @desc sync directory
  * @param {String} from: src dir
  * @param {String} to: target dir
@@ -219,10 +188,9 @@ const recordPreProcess = (main, children) => {
  * @param {String} object.configName: config file of current dir. '.biorc' by default
  * @param {Boolean} object.watch: whether listen changes of files and sync files from current project dir to scaffold workspace. 'false' by default
  */
-module.exports = (currentEnv, { configName = pathUtil.configName, watch = false } = {}) => {
+module.exports = (currentEnv, { watch = false } = {}) => {
     co(function* run() {
         const cwd = process.cwd();
-        const configFile = path.join(cwd, configName);
 
         let scaffoldName = scaffoldUtil.getScaffoldNameFromConfigFile();
 

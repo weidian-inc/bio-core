@@ -1,7 +1,7 @@
 const fse = require('fs-extra');
 const fs = require('fs');
 const path = require('path');
-const { red, yellow } = require('chalk');
+const { yellow } = require('chalk');
 
 const VERSION_FILE = 'version.json';
 const HOOKS_DIRNAME = 'hooks';

@@ -7,11 +7,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const sh = require('shelljs');
-const { red, green } = require('chalk');
-
-const pathUtil = require('../../../../tool/path');
-const fileUtil = require('../../../../tool/file');
 
 const util = require('../util');
 
@@ -57,10 +52,7 @@ function installDependencies({ type }) {
         default:
             modules = es6Module;
     }
-    return util.ensureModule(
-        modules, 
-        cwd,
-    );
+    return util.ensureModule( modules, cwd );
 }
 
 function execLint({ lintTarget = cwd, lintResultSrcFile, fix }) {

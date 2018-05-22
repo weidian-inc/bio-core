@@ -5,15 +5,9 @@
  * @date  2017/08/11
  */
 
-const fs = require('fs-extra');
-const path = require('path');
-const sh = require('shelljs');
 const co = require('co');
-const { red, green } = require('chalk');
 
 const inquirer = require('inquirer');
-
-const cwd = process.cwd();
 
 const typescript = require('./lib/typescript/index');
 const node = require('./lib/node/index');
@@ -38,7 +32,7 @@ const select = () => {
  * @func
  * @desc lint
  */
-module.exports = (params) => {
+module.exports = () => {
     co(function* init() {
         const typename = yield select();
         if (typename === 'typescript unitest') {

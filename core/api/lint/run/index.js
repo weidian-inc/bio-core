@@ -7,7 +7,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const sh = require('shelljs');
 const { red, green } = require('chalk');
 const chokidar = require('chokidar');
 const anymatch = require('anymatch');
@@ -26,7 +25,7 @@ function watchFiles(fileChangeCallback) {
         persistent: true,
         alwaysStat: true,
         interval: 300,
-        ignored: /(lint\-result)|(\.git)|(\.ds_store)|(node_modules)|(stats\.json)|(build)/i,
+        ignored: /(lint-result)|(\.git)|(\.ds_store)|(node_modules)|(stats\.json)|(build)/i,
     });
 
 
@@ -119,7 +118,7 @@ module.exports = ({ lintTarget, watch, fix }) => {
         // 初始化结果页面（带监听器）
         fse.writeFileSync(lintResultIndexFile, require('./result.html')({ stylelintResultSrcFile, eslintResultSrcFile, statusResultSrcFile, port }));
 
-        const chokidarWatcher = watchFiles((changedFile) => {
+        const chokidarWatcher = watchFiles(() => {
             console.log('Lint Running...');
 
             // 更新页面状态
@@ -185,11 +184,12 @@ module.exports = ({ lintTarget, watch, fix }) => {
         console.log('stylelint config missing'.red);
     }
 
-    if (eslintExitCode === 999 && stylelintExitCode !== 999) {
-        console.log('只有 stylelint');
-    } else if (eslintExitCode !== 999 && stylelintExitCode === 999) {
-        console.log('只有 eslint');
-    } else if (eslintExitCode !== 999 && stylelintExitCode !== 999) {
+    // if (eslintExitCode === 999 && stylelintExitCode !== 999) {
+        // console.log('只有 stylelint');
+    // } else if (eslintExitCode !== 999 && stylelintExitCode === 999) {
+        // console.log('只有 eslint');
+    // } else if (eslintExitCode !== 999 && stylelintExitCode !== 999) {
+    if (eslintExitCode !== 999 || stylelintExitCode !== 999) {
         console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed!'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed!'));
         writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
         ncp.copy(lintResultIndexFile, () => {

@@ -5,18 +5,9 @@
  * @date  2017/08/11
  */
 
-const fs = require('fs');
-const path = require('path');
 const co = require('co');
-const { red, green } = require('chalk');
-const chokidar = require('chokidar');
+const { green } = require('chalk');
 const inquirer = require('inquirer');
-
-const fse = require('fs-extra');
-
-const hook = require('../../hook');
-
-const cwd = process.cwd();
 
 const eslint = require('../lib/eslint/index');
 const stylelint = require('../lib/stylelint/index');
@@ -72,11 +63,9 @@ function* initEslint({ initType }) {
  * @func
  * @desc lint
  */
-module.exports = (params) => {
+module.exports = () => {
     co(function* init() {
         const initType = yield chooseInitType();
-
-        // globalParams = { ...globalParams, type: initType };
 
         switch(initType) {
             case 'stylelint':

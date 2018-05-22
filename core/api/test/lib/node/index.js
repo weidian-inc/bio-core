@@ -13,7 +13,7 @@ const TEST_DEMO_FILE_NAME = 'demo.spec.js';
 
 const TEST_DIR = path.join(cwd, TEST_DIR_NAME);
 
-const setNewTestScriptName = (name) => {
+const setNewTestScriptName = () => {
     return (done) => {
         inquirer.prompt([{
             type: 'confirm',
