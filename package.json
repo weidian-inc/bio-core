@@ -70,7 +70,8 @@
   },
   "pre-commit": {
     "run": [
-      "lint"
+      "lint",
+      "test"
     ]
   },
   "homepage": "https://github.com/weidian-inc/bio-core",
