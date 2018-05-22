@@ -36,7 +36,7 @@ function execLint({ lintTarget, lintResultSrcFile, fix }) {
     // 检查依赖是否安装
     if (!fs.existsSync(path.join(cwd, '/node_modules/stylelint/bin/stylelint.js'))) {
         // console.log(red(`\nError: stylelint is required but not installed, please run ${green('bio lint init')} first\n`));
-        return 0; // exitCode
+        return 999; // exitCode
     }
 
     const lintedFiles = `"${path.join(cwd, '**/*.css')}" "${path.join(cwd, '**/*.less')}" "${path.join(cwd, '**/*.scss')}" "${path.join(cwd, '**/*.sass')}" "${path.join(cwd, '**/*.vue')}"`;

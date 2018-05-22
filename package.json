@@ -67,6 +67,11 @@
   "engines": {
     "node": ">=8.9.4"
   },
+  "pre-commit": {
+    "run": [
+      "lint"
+    ]
+  },
   "homepage": "https://github.com/weidian-inc/bio-core",
   "keywords": [
     "bio",

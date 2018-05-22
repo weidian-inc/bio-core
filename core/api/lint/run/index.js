@@ -94,7 +94,7 @@ function writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFil
                         '<span style="color:#478749">stylelint passed！</span>';
 
     const txt = `${eslintTxt} ${eslintExitCode || stylelintExitCode ? '╮(╯_╰)╭' : 'd=(￣▽￣*)b'} ${stylelintTxt}`;
-    
+
     fse.writeFileSync(statusResultSrcFile, `<p style="text-align:center;font-size: 30px;">${txt}</p>`);
 }
 /**
@@ -173,13 +173,29 @@ module.exports = ({ lintTarget, watch, fix }) => {
     stylelint.initParams({ fix, lintTarget });
 
     // run
-    console.log(green('\nrunning lint\n'));
+    console.log(green('\nrunning lint...\n'));
     const eslintExitCode = eslint.exec();
     const stylelintExitCode = stylelint.exec();
 
-    console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed！'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed！'));
-    writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
-    ncp.copy(lintResultIndexFile, () => {
-        console.log((`\nresult page (url has been copied):\n\n${lintResultIndexFile.green}\n`));
-    });
+    if (eslintExitCode === 999) {
+        console.log('eslint config missing'.red);
+    }
+
+    if (stylelintExitCode === 999) {
+        console.log('stylelint config missing'.red);
+    }
+
+    if (eslintExitCode === 999 && stylelintExitCode !== 999) {
+        console.log('只有 stylelint');
+    } else if (eslintExitCode !== 999 && stylelintExitCode === 999) {
+        console.log('只有 eslint');
+    } else if (eslintExitCode !== 999 && stylelintExitCode !== 999) {
+        console.log(eslintExitCode ? red('eslint unpassed') : green('eslint passed!'), '; ', stylelintExitCode ? red('stylelint unpassed') : green('stylelint passed!'));
+        writeStatusFile({ eslintExitCode, stylelintExitCode, statusResultSrcFile });
+        ncp.copy(lintResultIndexFile, () => {
+            console.log((`\nresult page (url has been copied):\n\n${lintResultIndexFile.green}\n`));
+        });
+    } else if (eslintExitCode === 999 && stylelintExitCode === 999) {
+        console.log('\nno lint config found.\n'.red);
+    }
 };
