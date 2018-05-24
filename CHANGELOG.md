@@ -1,3 +1,7 @@
+# tag: v1.1.1
+
+node version required changes from 8.9.4 to 8.9.1
+
 # tag: v1.0.19
 
 node version check upgrade (same as vue-cli)
