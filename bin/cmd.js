@@ -185,6 +185,20 @@ module.exports = (commander) => {
             });
         });
 
+    commander
+        .command('doc')
+        .description('doc center.')
+        .action(() => {
+            core.scaffold.run('dev', { watch: false, scaffold: 'bio-doc', isCurrentProject: false });
+        });
+
+    commander
+        .command('docs')
+        .description('doc center.')
+        .action(() => {
+            core.scaffold.run('dev', { watch: false, scaffold: 'bio-doc', isCurrentProject: false });
+        });
+
     commander.parse(process.argv);
 
     if (commander.args.length === 0) {

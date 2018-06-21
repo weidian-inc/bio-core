@@ -188,23 +188,25 @@ const recordPreProcess = (main, children) => {
  * @param {String} object.configName: config file of current dir. '.biorc' by default
  * @param {Boolean} object.watch: whether listen changes of files and sync files from current project dir to scaffold workspace. 'false' by default
  */
-module.exports = (currentEnv, { watch = false } = {}) => {
+module.exports = (currentEnv, { watch = false, scaffold, isCurrentProject = true } = {}) => {
     co(function* run() {
         const cwd = process.cwd();
 
-        let scaffoldName = scaffoldUtil.getScaffoldNameFromConfigFile();
+        let scaffoldName = scaffold || scaffoldUtil.getScaffoldNameFromConfigFile();
 
         if (!scaffoldName) {
             return;
         }
 
         // run 'npm install' when node_modules does not exist
-        if (!fs.existsSync(path.join(cwd, 'node_modules')) || !fs.readdirSync(path.join(cwd, 'node_modules')).length) {
-            try {
-                console.log('\nauto running "npm install"...\n'.green);
-                require('child_process').execSync(`cd ${cwd} && npm i`);
-            } catch (err) {
-                // console.log('auto running "npm install" failed');
+        if (isCurrentProject) {
+            if (!fs.existsSync(path.join(cwd, 'node_modules')) || !fs.readdirSync(path.join(cwd, 'node_modules')).length) {
+                try {
+                    console.log('\nauto running "npm install"...\n'.green);
+                    require('child_process').execSync(`cd ${cwd} && npm i`);
+                } catch (err) {
+                    // console.log('auto running "npm install" failed');
+                }
             }
         }
 
@@ -214,9 +216,15 @@ module.exports = (currentEnv, { watch = false } = {}) => {
         // ensure latest scaffold
         scaffoldUtil.ensureScaffoldLatest(scaffoldName);
 
-        const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+        let watcher;
 
-        yield killPreProcess();
+        if (isCurrentProject) {
+            watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+        }
+
+        if (isCurrentProject) {
+            yield killPreProcess();
+        }
 
         const debugPort = yield network.getFreePort(9000);
 
@@ -231,30 +239,32 @@ module.exports = (currentEnv, { watch = false } = {}) => {
             debugPort,
         });
 
-        recordPreProcess(process.pid, [{
-            pid: scaffoldProcess.pid,
-            ports: [debugPort],
-        }]);
+        if (isCurrentProject) {
+            recordPreProcess(process.pid, [{
+                pid: scaffoldProcess.pid,
+                ports: [debugPort],
+            }]);
 
-        const afterKillPort = () => {
-            try {
-                process.kill(scaffoldProcess.pid);
-            } catch (err) {
-                // do nothing
-            }
+            const afterKillPort = () => {
+                try {
+                    process.kill(scaffoldProcess.pid);
+                } catch (err) {
+                    // do nothing
+                }
 
-            if (watcher) {
-                watcher.close();
-            }
-            process.exit();
-        };
+                if (watcher) {
+                    watcher.close();
+                }
+                process.exit();
+            };
 
-        process.on('SIGINT', () => {
-            killPort(debugPort).then(() => {
-                afterKillPort();
-            }).catch(() => {
-                afterKillPort();
+            process.on('SIGINT', () => {
+                killPort(debugPort).then(() => {
+                    afterKillPort();
+                }).catch(() => {
+                    afterKillPort();
+                });
             });
-        });
+        }
     });
 };
