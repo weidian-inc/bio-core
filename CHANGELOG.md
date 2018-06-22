@@ -1,3 +1,7 @@
+# tag: v1.1.4
+
+update sync-directory version
+
 # tag: v1.1.1
 
 node version required changes from 8.9.4 to 8.9.1
