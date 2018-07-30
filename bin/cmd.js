@@ -201,7 +201,16 @@ module.exports = (commander) => {
 
     commander.parse(process.argv);
 
-    if (commander.args.length === 0) {
-        showHelp();
+    // if (commander.args.length === 0) {
+    //     showHelp();
+    // }
+    if (process.argv.slice(2).length === 0) {
+        if (!scaffoldUtil.getScaffoldNameFromConfigFile()) {
+            core.init().then(() => {
+                core.scaffold.run('dev-daily', { watch: true });
+            });
+        } else {
+            core.scaffold.run('dev-daily', { watch: true });
+        }
     }
 };

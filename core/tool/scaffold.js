@@ -123,7 +123,7 @@ module.exports = {
         }
 
         if (!scaffoldName) {
-            console.log('\nno scaffold info found at current directory, please run "bio init <scaffoldName>" first\n'.red);
+            console.log('\nno scaffold info found at current directory\n'.red);
         }
 
         return scaffoldName;
