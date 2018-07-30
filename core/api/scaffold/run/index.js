@@ -72,16 +72,18 @@ const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName
         silent: true,
     });
 
+    const relativeWorkspacePath = workspaceFolder.replace(scaffoldFolder, '');
+
     child.stdout.setEncoding('utf8');
     child.stdout.on('data', (data) => {
         if (data) {
-            console.log(data.toString());
+            console.log(data.toString().split(workspaceFolder).join('').split(relativeWorkspacePath).join(''));
         }
     });
 
     child.stderr.on('data', (data) => {
         if (data) {
-            console.log(data.toString());
+            console.log(data.toString().replace(workspaceFolder, '').replace(relativeWorkspacePath, ''));
         }
     });
 
