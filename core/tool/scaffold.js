@@ -335,7 +335,8 @@ module.exports = {
 
                 this.moveScaffoldCache(scaffoldName);
             } catch (err) {
-                console.log(`\nError occurred when "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}"\n`.red, err);
+                console.log(`\nError occurred when "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}"\n`.red);
+                process.exit(1);
             }
         }
     },
