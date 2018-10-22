@@ -9,7 +9,7 @@
     "email": "liuyuanyangscript@gmail.com"
   },
   "bundleDependencies": false,
-  "dependencies": {
+  "devDependencies": {
     "anymatch": "^2.0.0",
     "chalk": "^2.3.2",
     "child-process-close": "^0.1.1",
@@ -45,11 +45,7 @@
     "shelljs": "^0.8.1",
     "socket.io": "^2.0.4",
     "sync-directory": "^1.0.9",
-    "url-parse": "^1.1.9"
-  },
-  "deprecated": false,
-  "description": "bio-core",
-  "devDependencies": {
+    "url-parse": "^1.1.9",
     "babel-eslint": "^8.2.2",
     "chai": "^4.1.2",
     "eslint": "^4.7.2",
@@ -64,6 +60,8 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.3"
   },
+  "deprecated": false,
+  "description": "bio-core",
   "engines": {
     "node": ">=8.9.1"
   },
@@ -86,7 +84,8 @@
   "scripts": {
     "lint": "eslint bin/** core/** index.js",
     "test": "istanbul cover _mocha test/*",
-    "coverage": "cat ./coverage/lcov.info | coveralls"
+    "coverage": "cat ./coverage/lcov.info | coveralls",
+    "prepublishOnly": "node prepublish.js"
   },
-  "version": "1.1.11"
+  "version": "2.0.0"
 }
