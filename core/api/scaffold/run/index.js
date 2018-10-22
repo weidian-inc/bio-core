@@ -31,14 +31,14 @@ require('child-process-close');
  * @param {Boolean} object.watch: whether listen changes of files and sync files.
  */
 const runSyncDirectory = (from, to, { watch }) => {
-    const spinner = ora('file synchronization running...').start();
+    const spinner = ora(`${'[bio]'.green} preparing...`).start();
     const watcher = syncDirectory(from, to, {
         type: 'hardlink',
         watch,
         exclude: [/((\.git)|(\.DS_Store))/i, pathUtil.cacheFolder.replace(/\/$/, '').split('/').pop()],
     });
 
-    spinner.succeed('file synchronization done.').stop();
+    spinner.succeed(`${'[bio]'.green} preparation done.`).stop();
 
     return watcher;
 };
@@ -70,21 +70,6 @@ const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName
     ], {
         cwd: scaffoldFolder,
         silent: true,
-    });
-
-    const relativeWorkspacePath = workspaceFolder.replace(scaffoldFolder, '');
-
-    child.stdout.setEncoding('utf8');
-    child.stdout.on('data', (data) => {
-        if (data) {
-            console.log(data.toString().split(workspaceFolder).join('').split(relativeWorkspacePath).join(''));
-        }
-    });
-
-    child.stderr.on('data', (data) => {
-        if (data) {
-            console.log(data.toString().replace(workspaceFolder, '').replace(relativeWorkspacePath, ''));
-        }
     });
 
     return child;
@@ -182,6 +167,65 @@ const recordPreProcess = (main, children) => {
     fs.close(fd);
 };
 
+const watchScaffoldProcess = (scaffoldProcess, syncWatcher, debugPort) => {
+    const shouldShowLog = (log) => {
+        if (log.indexOf('package in') === -1 && log.indexOf('up to date in') === -1) {
+            return true;
+        }
+
+        return false;
+    };
+
+    const exitMaster = () => {
+        if (syncWatcher) {
+            syncWatcher.close();
+        }
+        process.exit(0);
+    };
+
+    // master exit when child process exit
+    scaffoldProcess.on('exit', () => {
+        exitMaster();
+    });
+    scaffoldProcess.on('error', () => {
+        exitMaster();
+    });
+
+    // show log of child process
+    scaffoldProcess.stdout.setEncoding('utf8');
+    scaffoldProcess.stdout.on('data', (data) => {
+        if (data) {
+            const log = data.toString();
+            // remove useless npm log
+            if (shouldShowLog(log)) {
+                process.stdout.write(log);
+            }
+        }
+    });
+    scaffoldProcess.stderr.on('data', (data) => {
+        if (data) {
+            const log = data.toString();
+            if (shouldShowLog(log)) {
+                process.stdout.write(log);
+            }
+        }
+    });
+
+    const afterKillPort = () => {
+        try {
+            process.kill(scaffoldProcess.pid);
+        } catch (err) {
+            // do nothing
+        }
+
+        exitMaster();
+    };
+
+    process.on('SIGINT', () => {
+        killPort(debugPort).then(afterKillPort).catch(afterKillPort);
+    });
+};
+
 /**
  * @func
  * @desc run scaffold
@@ -200,73 +244,51 @@ module.exports = (currentEnv, { watch = false, scaffold, isCurrentProject = true
             return;
         }
 
-        // run 'npm install' when node_modules does not exist
-        if (isCurrentProject) {
-            if (!fs.existsSync(path.join(cwd, 'node_modules')) || !fs.readdirSync(path.join(cwd, 'node_modules')).length) {
-                try {
-                    console.log('\nauto running "npm install"...\n'.green);
-                    require('child_process').execSync(`cd ${cwd} && npm i`);
-                } catch (err) {
-                    // console.log('auto running "npm install" failed');
-                }
-            }
-        }
-
         scaffoldName = scaffoldUtil.getFullName(scaffoldName);
         const workspaceFolder = pathUtil.getWorkspaceFolder({ cwd, scaffoldName });
 
         // ensure latest scaffold
         scaffoldUtil.ensureScaffoldLatest(scaffoldName);
 
-        let watcher;
-
-        if (isCurrentProject) {
-            watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
-        }
-
-        if (isCurrentProject) {
-            yield killPreProcess();
-        }
-
         const debugPort = yield network.getFreePort(9000);
 
-        console.log(`\nscaffold: ${scaffoldUtil.getShortName(scaffoldName).green}; task: ${currentEnv.green}\n`);
+        ora(`${'[bio]'.green} scaffold: ${scaffoldUtil.getShortName(scaffoldName).green}; task: ${currentEnv.green}`).succeed().stop();
 
-        // run scaffold
-        const scaffoldProcess = runScaffold({
-            currentEnv,
-            cwd,
-            workspaceFolder,
-            scaffoldName,
-            debugPort,
-        });
-
+        // run 'npm install' when node_modules does not exist
         if (isCurrentProject) {
+            const spinner = ora(`${'[bio]'.green} npm installing...`).start();
+            require('child_process').execSync(`cd ${cwd} && npm i --silent`);
+            spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
+
+            const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+
+            yield killPreProcess();
+
+            // run scaffold
+            const scaffoldProcess = runScaffold({
+                currentEnv,
+                cwd,
+                workspaceFolder,
+                scaffoldName,
+                debugPort,
+            });
+
+            watchScaffoldProcess(scaffoldProcess, watcher, debugPort);
+
             recordPreProcess(process.pid, [{
                 pid: scaffoldProcess.pid,
                 ports: [debugPort],
             }]);
-
-            const afterKillPort = () => {
-                try {
-                    process.kill(scaffoldProcess.pid);
-                } catch (err) {
-                    // do nothing
-                }
-
-                if (watcher) {
-                    watcher.close();
-                }
-                process.exit();
-            };
-
-            process.on('SIGINT', () => {
-                killPort(debugPort).then(() => {
-                    afterKillPort();
-                }).catch(() => {
-                    afterKillPort();
-                });
+        } else {
+            const scaffoldProcess = runScaffold({
+                currentEnv,
+                cwd,
+                workspaceFolder,
+                scaffoldName,
+                debugPort,
             });
+
+            watchScaffoldProcess(scaffoldProcess, null, debugPort);
         }
     });
 };

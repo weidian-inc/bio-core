@@ -33,20 +33,14 @@ module.exports = (commander) => {
 
     const showHelp = () => {
         console.log(['',
-            '',
             ` - init project                >  ${'bio init [scaffoldName]'.green}`,
-            '',
-            ` - run scaffold task           >  ${'bio run <task> [-n, --no-watch]'.green}`,
+            ` - run scaffold task           >  ${'bio run <task>'.green}`,
             ` - run local mock              >  ${'bio mock [port]'.green}`,
-            '',
             ` - show scaffold               >  ${'bio scaffold show <scaffoldName>'.green}`,
             ` - create scaffold             >  ${'bio scaffold create'.green}`,
-            '',
             ` - init lint                   >  ${'bio lint init [-t, --type [value]]'.green}`,
             ` - run lint                    >  ${'bio lint [-w, --watch]'.green}`,
-            '',
             ` - help                        >  ${'bio help'.green}\n`,
-            '',
         ].join('\n'));
 
         console.log(`doc: ${'https://github.com/weidian-inc/bio-cli'.green}\n`);
@@ -199,11 +193,15 @@ module.exports = (commander) => {
             core.scaffold.run('dev', { watch: false, scaffold: 'bio-doc', isCurrentProject: false });
         });
 
+    // error on unknown commands
+    commander.on('command:*', function () {
+        console.error(`Invalid command: ${'%s'.yellow}\nSee list of available commands.`, commander.args.join(' '));
+        showHelp();
+        process.exit(1);
+    });
+
     commander.parse(process.argv);
 
-    // if (commander.args.length === 0) {
-    //     showHelp();
-    // }
     if (process.argv.slice(2).length === 0) {
         if (!scaffoldUtil.getScaffoldNameFromConfigFile()) {
             core.init().then(() => {
