@@ -32,8 +32,8 @@ module.exports = {
      * @param {String} scaffoldName
      * @return {String} dir path for execing installing scaffold
      */
-    getScaffoldExecInstallFolder(scaffoldName) {
-        return path.join(this.getScaffoldWrapper(scaffoldName), 'tmp-install-cache', `${md5(scaffoldName)}`);
+    getScaffoldInstallFolder(scaffoldName) {
+        return path.join(this.getScaffoldWrapper(scaffoldName), `install-scaffold/${md5(scaffoldName)}`);
     },
 
     /**
