@@ -15,6 +15,7 @@ const scaffoldUtil = require('../../tool/scaffold');
 const co = require('co');
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
+const ora = require('ora');
 
 /**
  * @thunk function
@@ -80,8 +81,6 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
         errorOnExist: false,
     });
 
-    console.log('\nproject files created successfully!'.green);
-
     return true;
 };
 
@@ -124,29 +123,28 @@ module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName
             if (!isSuccessful) {
                 return;
             }
+
+            // write cache file to store init infomation
+            scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
+
+            // run npm install
+            const nmpath = path.join(cwd, 'node_modules');
+            if (!fs.existsSync(nmpath) || fs.readdirSync(nmpath).length <= 5) {
+                const spinner = ora(`${'[bio]'.green} npm install running`).start();
+
+                try {
+                    require('child_process').execSync(`cd ${cwd} && npm i --silent`);
+                    spinner.succeed(`${'[bio]'.green} npm install done`).stop();
+                } catch (err) {
+                    spinner.fail(`${'[bio]'.red} npm install failed`).stop();
+                }
+            }
+
+            console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
         } else {
+            // write cache file to store init infomation
+            scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
             console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
         }
-
-        // write cache file to store init infomation
-        scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
-
-        // run npm install
-        const nmpath = path.join(cwd, 'node_modules');
-        if (!fs.existsSync(nmpath) || fs.readdirSync(nmpath).length <= 5) {
-            console.log('\nauto running "npm install"\n');
-
-            try {
-                require('child_process').execSync(`cd ${cwd} && npm install`, {
-                    stdio: 'inherit'
-                });
-            } catch (err) {
-                console.log('auto run "npm install" failed, skip'.yellow);
-            }
-        }
-
-        console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
-
-        console.log('\nInit project successfully!\n');
     });
 };
