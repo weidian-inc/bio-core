@@ -9,8 +9,6 @@ const fs = require('fs');
 const path = require('path');
 
 const fse = require('fs-extra');
-const readdirSync = require('recursive-readdir-sync');
-const arrayDiff = require('simple-array-diff');
 
 const pathUtil = require('./path');
 const fileUtil = require('./file');
@@ -183,14 +181,14 @@ module.exports = {
 
         if (!this.isScaffoldExists(scaffoldName)) {
             console.log(`installing scaffold ${scaffoldName}...`);
-            this.installScaffold(scaffoldName);
+            this.installScaffold(scaffoldName, { async: false });
             console.log(`scaffold ${scaffoldName} installed successfully`);
             return;
         }
 
         if (this._isScaffoldOutdate(scaffoldName)) {
             console.log(`\nupdating scaffold ${scaffoldName}...\n`);
-            this.installScaffold(scaffoldName);
+            this.installScaffold(scaffoldName, { async: false });
         }
     },
 
@@ -229,10 +227,10 @@ module.exports = {
 
         if (hopedVersion !== 'latest') {
             if (hopedVersion !== currentVersion) {
-                // console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
-                // console.log('   - scaffoldName: ', scaffoldName);
-                // console.log('   - currentVersion: ', currentVersion);
-                // console.log('   - hopedVersion: ', hopedVersion);
+                console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
+                console.log('   - scaffoldName: ', scaffoldName);
+                console.log('   - currentVersion: ', currentVersion);
+                console.log('   - hopedVersion: ', hopedVersion);
                 return true;
             } else {
                 return false;
@@ -242,10 +240,10 @@ module.exports = {
 
             if (latestVersion) {
                 if (currentVersion !== latestVersion) {
-                    // console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
-                    // console.log('  - scaffoldName: ', scaffoldName);
-                    // console.log('  - currentVersion: ', currentVersion);
-                    // console.log('  - hopedVersion: ', hopedVersion, latestVersion, '\n');
+                    console.log(`\nscaffold ${scaffoldName} is outdated, details as below:\n`);
+                    console.log('  - scaffoldName: ', scaffoldName);
+                    console.log('  - currentVersion: ', currentVersion);
+                    console.log('  - hopedVersion: ', hopedVersion, latestVersion, '\n');
                     return true;
                 }
                 return false;
@@ -256,7 +254,7 @@ module.exports = {
     },
 
     moveScaffoldCache(scaffoldName) {
-        const execInstallFolder = pathUtil.getScaffoldInstallFolder(scaffoldName);
+        const execInstallFolder = pathUtil.getScaffoldExecInstallFolder(scaffoldName);
         const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
         const scaffoldWrapper = pathUtil.getScaffoldWrapper(scaffoldName);
 
@@ -291,202 +289,11 @@ module.exports = {
 
         // run npm install
         console.log('installing dependencies...');
-        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.scaffoldRegistry} --silent`, {
+        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.scaffoldRegistry}`, {
             stdio: 'inherit'
         });
 
         fse.removeSync(execInstallFolder);
-    },
-
-    _replaceScaffoldFiles(srcScaffoldFolder, targetScaffoldFolder) {
-        // diff scaffoldInstallFolder and targetScaffoldFolder
-        const filterFiles = (files, rootPath) => {
-            return files.map(filePath => {
-                const relativePath = filePath.replace(rootPath, '');
-                if (relativePath && !/(node_modules\/)|(\.git\/)|(workspace\/)/.test(relativePath)) {
-                    return relativePath;
-                }
-            });
-        };
-        const srcScaffoldFiles = filterFiles(readdirSync(srcScaffoldFolder), srcScaffoldFolder);
-        const targetScaffoldFiles = filterFiles(readdirSync(targetScaffoldFolder), targetScaffoldFolder);
-
-        const diffResult = arrayDiff(targetScaffoldFiles, srcScaffoldFiles);
-
-        for (let type in diffResult) {
-            const subArr = diffResult[type];
-            switch (type) {
-                case 'added':
-                case 'common':
-                    subArr.forEach(relativePath => {
-                        if (relativePath) {
-                            if (/^(\/package\.json)|(\/package-lock\.json)/.test(relativePath)) {
-                                return;
-                            }
-
-                            const srcFile = path.join(srcScaffoldFolder, relativePath);
-                            let targetFile = path.join(targetScaffoldFolder, relativePath);
-
-                            if (/^(\/\.package\.json)|(\/\.package-lock\.json)/.test(relativePath)) {
-                                targetFile = path.join(targetScaffoldFolder, relativePath.replace('.package', 'package'));
-                            }
-
-                            fse.ensureFileSync(targetFile);
-                            fse.copyFileSync(srcFile, targetFile);
-                        }
-                    });
-                    break;
-                case 'removed':
-                    subArr.forEach(relativePath => {
-                        // 删除过程中，对 package.json / package-lock.json 特殊对待，跳过删除 package.json / package-lock.json
-                        if (relativePath) {
-                            if (/^(\/package\.json)|(\/package-lock\.json)/.test(relativePath)) {
-                                return;
-                            }
-
-                            const targetFile = path.join(targetScaffoldFolder, relativePath);
-
-                            if (fs.existsSync(targetFile)) {
-                                fse.removeSync(targetFile);
-                            }
-                        }
-                    });
-                    break;
-            }
-        }
-    },
-
-    patchScaffold(scaffoldName) {
-        const scaffoldInstallFolder = pathUtil.getScaffoldInstallFolder(scaffoldName);
-        const targetScaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
-
-        const srcScaffoldFolder = path.join(scaffoldInstallFolder, 'node_modules', scaffoldName);
-        const srcScaffoldDep = path.join(scaffoldInstallFolder, 'node_modules');
-
-        // return if src scaffold not exists
-        if (!fs.existsSync(srcScaffoldFolder) || !fs.existsSync(srcScaffoldDep)) {
-            return;
-        }
-
-        fse.ensureDirSync(targetScaffoldFolder);
-
-        const diffResult = this.diffDependencies(srcScaffoldFolder, targetScaffoldFolder);
-
-        this._replaceScaffoldFiles(srcScaffoldFolder, targetScaffoldFolder);
-
-        if (diffResult.type === 'package-file-not-exists') {
-            require('child_process').execSync(`cd ${targetScaffoldFolder} && npm i --registry ${npm.scaffoldRegistry}`, {
-                stdio: 'inherit'
-            });
-        } else {
-            if (diffResult.added.length) {
-                require('child_process').execSync(`cd ${targetScaffoldFolder} && npm i ${diffResult.added.join(' ')} --registry ${npm.scaffoldRegistry} --save`, {
-                    stdio: 'inherit'
-                });
-            }
-            if (diffResult.removed.length) {
-                require('child_process').execSync(`cd ${targetScaffoldFolder} && npm uninstall ${diffResult.removed.join(' ')} --save`, {
-                    stdio: 'inherit'
-                });
-            }
-        }
-
-        fse.removeSync(scaffoldInstallFolder);
-    },
-
-    diffDependencies(srcScaffoldFolder, targetScaffoldFolder) {
-        const _getDependencesVersion = (packageJson, packageLockJson) => {
-            let dependencies = {
-                type: 'update',
-                map: {}
-            };
-
-            if (!fs.existsSync(packageJson) || !fs.existsSync(packageLockJson)) {
-                dependencies.type = 'package-file-not-exists';
-                return dependencies;
-            }
-            const packageJsonObj = JSON.parse(fs.readFileSync(packageJson, 'utf-8'));
-            const packageLockJsonObj = JSON.parse(fs.readFileSync(packageLockJson, 'utf-8'));
-            const depReg = /dependenc/i;
-
-            // 找到 package.json 的各个依赖，不写版本号
-            const { map } = dependencies;
-            for (let key in packageJsonObj) {
-                if (depReg.test(key)) {
-                    for (let dep in packageJsonObj[key]) {
-                        if (!map[dep]) {
-                            map[dep] = {
-                                version: packageJsonObj[key][dep]
-                            };
-                        }
-                    }
-                }
-            }
-
-            // 遍历 packageLockJsonObj，找到各个依赖的版本号
-            for (let key in packageLockJsonObj) {
-                if (depReg.test(key)) {
-                    for (let dep in packageLockJsonObj[key]) {
-                        if (map[dep]) { // 如果在 package.json 中
-                            map[dep].version = packageLockJsonObj[key][dep].version;
-                        }
-                    }
-                }
-            }
-
-            return dependencies;
-        };
-
-        const _diffDependencies = (srcDependencies, targetDependencies) => {
-            const added = [];
-            const removed = [];
-            const common = [];
-
-            const srcMap = srcDependencies.map;
-            const targetMap = targetDependencies.map;
-
-            if (targetDependencies.type === 'package-file-not-exists') {
-                for (let key in srcMap) {
-                    added.push(`${key}@${srcMap[key].version}`);
-                }
-            } else {
-                // 遍历源依赖
-                for (let key in srcMap) {
-                    if (targetMap[key]) { // 如果旧依赖
-                        if (targetMap[key].version == srcMap[key].version) { // 如果二者依赖版本一致
-                            common.push(`${key}@${srcMap[key].version}`);
-                        } else { // 如果二者版本不一致
-                            added.push(`${key}@${srcMap[key].version}`);
-                        }
-                    } else { // 如果旧依赖不存在
-                        added.push(key);
-                    }
-                }
-
-                // 遍历旧依赖
-                for (let key in targetMap) {
-                    if (!srcMap[key]) { // 如果新依赖不存在，说明需要删除
-                        removed.push(key);
-                    }
-                }
-            }
-
-            return {
-                added,
-                removed,
-                type: targetDependencies.type
-            };
-        };
-
-        if (!fs.existsSync(path.join(srcScaffoldFolder, '.package.json')) || !fs.existsSync(path.join(srcScaffoldFolder, '.package-lock.json'))) {
-            throw Error('\n\n您当前安装的脚手架没有执行格式化操作，请联系刘远洋处理\n\n'.red);
-        }
-
-        const srcDependencies = _getDependencesVersion(path.join(srcScaffoldFolder, '.package.json'), path.join(srcScaffoldFolder, '.package-lock.json'));
-        const targetDependencies = _getDependencesVersion(path.join(targetScaffoldFolder, 'package.json'), path.join(targetScaffoldFolder, 'package-lock.json'));
-
-        // 找到有变化的依赖
-        return _diffDependencies(srcDependencies, targetDependencies);
     },
 
     /**
@@ -494,8 +301,9 @@ module.exports = {
      * @desc install scaffold
      * @param {String} scaffoldName
      */
-    installScaffold(scaffoldName) {
-        const execInstallFolder = pathUtil.getScaffoldInstallFolder(scaffoldName);
+    installScaffold(scaffoldName, options) {
+        const { async } = options;
+        const execInstallFolder = pathUtil.getScaffoldExecInstallFolder(scaffoldName);
         const child = require('child_process');
 
         const hopedVersion = this.getHopedVersion(scaffoldName);
@@ -507,18 +315,29 @@ module.exports = {
         createExecPackageJsonFile(execInstallFolder, scaffoldName);
         this.preInstall(execInstallFolder);
 
-        const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion} --no-optional --slient`;
+        const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion} --no-optional`;
 
-        try {
-            child.execSync(order, {
-                stdio: 'inherit',
+        if (async) {
+            child.exec(order, (error) => {
+                if (error) {
+                    // remove exec dir
+                    fse.removeSync(execInstallFolder);
+                    return;
+                }
+
+                console.log(`scaffold "${scaffoldName}" updated successfully!`);
             });
+        } else {
+            try {
+                child.execSync(order, {
+                    stdio: 'inherit',
+                });
 
-            this.patchScaffold(scaffoldName);
-        } catch (err) {
-            console.log(err);
-            console.log(`\nError occurred when "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}"\n`.red);
-            process.exit(1);
+                this.moveScaffoldCache(scaffoldName);
+            } catch (err) {
+                console.log(`\nError occurred when "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}"\n`.red);
+                process.exit(1);
+            }
         }
     },
 };
