@@ -179,20 +179,6 @@ module.exports = (commander) => {
             });
         });
 
-    commander
-        .command('doc')
-        .description('doc center.')
-        .action(() => {
-            core.scaffold.run('dev', { watch: false, scaffold: 'bio-doc', isCurrentProject: false });
-        });
-
-    commander
-        .command('docs')
-        .description('doc center.')
-        .action(() => {
-            core.scaffold.run('dev', { watch: false, scaffold: 'bio-doc', isCurrentProject: false });
-        });
-
     // error on unknown commands
     commander.on('command:*', function () {
         console.error(`Invalid command: ${'%s'.yellow}\nSee list of available commands.`, commander.args.join(' '));
