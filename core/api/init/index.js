@@ -16,12 +16,6 @@ const fse = require('fs-extra');
 const inquirer = require('inquirer');
 const ora = require('ora');
 
-/**
- * @thunk function
- * @desc get template path
- * @param {String} scaffoldName scaffold name(full name)
- * @return {String} template path
- */
 const getTemplateDirPath = (scaffoldName) => {
     return new Promise(resolve => {
         const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
@@ -89,13 +83,6 @@ const choseScaffold = () => {
     });
 };
 
-/**
- * @func
- * @desc init project
- * @param {Object}
- * @param {String/RegExp/Array} object.ignored will be used when testing if dir is empty. 'null' by default
- * @param {String} object.scaffoldName: scaffold name(full name)
- */
 module.exports = async ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName = '' } = {}) => {
     const cwd = process.cwd();
 
