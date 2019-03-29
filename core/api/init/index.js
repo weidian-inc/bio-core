@@ -2,7 +2,7 @@
  * @file
  * @desc init project
  * @author https://github.com/hoperyy
- * @date  2017/08/11
+ * @date  2018/08/11
  */
 
 const fs = require('fs');
