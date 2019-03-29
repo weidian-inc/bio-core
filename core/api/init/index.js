@@ -12,7 +12,6 @@ const fileUtil = require('../../tool/file');
 const pathUtil = require('../../tool/path');
 const scaffoldUtil = require('../../tool/scaffold');
 
-const co = require('co');
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
 const ora = require('ora');
@@ -24,7 +23,7 @@ const ora = require('ora');
  * @return {String} template path
  */
 const getTemplateDirPath = (scaffoldName) => {
-    return (done) => {
+    return new Promise(resolve => {
         const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
         const demoFolder = path.join(scaffoldFolder, 'project-template');
 
@@ -37,9 +36,9 @@ const getTemplateDirPath = (scaffoldName) => {
         }
 
         if (templateNames.length === 0) {
-            done(null, '');
+            resolve('');
         } else if (templateNames.length === 1) {
-            done(null, path.join(demoFolder, templateNames[0]));
+            resolve(path.join(demoFolder, templateNames[0]));
         } else {
             // ask user to choose demo
             inquirer.prompt([{
@@ -49,13 +48,11 @@ const getTemplateDirPath = (scaffoldName) => {
                 choices: templateNames,
             }]).then((answers) => {
                 const chosenTemplateName = answers.chosen;
-
                 console.log('\nThe chosen demo: ', chosenTemplateName.green);
-
-                done(null, path.join(demoFolder, chosenTemplateName));
+                resolve(path.join(demoFolder, chosenTemplateName));
             });
         }
-    };
+    });
 };
 
 /**
@@ -64,12 +61,12 @@ const getTemplateDirPath = (scaffoldName) => {
  * @param {String} current dir path
  * @param {String} scaffoldName scaffold name(full name)
  */
-const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
+const downloadTemplate = async function(cwd, scaffoldName) {
     // ensure latest scaffold
     scaffoldUtil.ensureScaffoldLatest(scaffoldName);
 
     // get demo from scaffold
-    const targetTemplateDirPath = yield getTemplateDirPath(scaffoldName);
+    const targetTemplateDirPath = await getTemplateDirPath(scaffoldName);
     if (targetTemplateDirPath === '') {
         console.log(`\nScaffold "${scaffoldName}" (npm package name) has no demo files. \n\nPlease contact the scaffold author to add demo files or check whether you've input the right scaffold name.\n`.red);
         return false;
@@ -85,16 +82,11 @@ const downloadTemplate = function* downloadTemplate(cwd, scaffoldName) {
 };
 
 const choseScaffold = () => {
-    return (done) => {
-        inquirer.prompt([{
-            type: 'list',
-            name: 'scaffoldName',
-            message: 'Select init style',
-            choices: scaffoldUtil.scaffoldList,
-        }]).then((answers) => {
-            done(null, scaffoldUtil.getFullName(answers.scaffoldName));
+    return new Promise((resolve) => {
+        inquirer.prompt([{ type: 'list', name: 'scaffoldName', message: 'Select init style', choices: scaffoldUtil.scaffoldList, }]).then((answers) => {
+            resolve(scaffoldUtil.getFullName(answers.scaffoldName));
         });
-    };
+    });
 };
 
 /**
@@ -104,47 +96,45 @@ const choseScaffold = () => {
  * @param {String/RegExp/Array} object.ignored will be used when testing if dir is empty. 'null' by default
  * @param {String} object.scaffoldName: scaffold name(full name)
  */
-module.exports = ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName = '' } = {}) => {
+module.exports = async ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName = '' } = {}) => {
     const cwd = process.cwd();
 
-    return co(function* init() {
-        let chosenScaffoldName = scaffoldName;
+    let chosenScaffoldName = scaffoldName;
 
-        if (!chosenScaffoldName) {
-            chosenScaffoldName = yield choseScaffold();
+    if (!chosenScaffoldName) {
+        chosenScaffoldName = await choseScaffold();
+    }
+
+    const fullScaffoldName = scaffoldUtil.getFullName(chosenScaffoldName);
+
+    if (fileUtil.isEmptyDir({ dir: cwd, ignored })) {
+        const isSuccessful = await downloadTemplate(cwd, fullScaffoldName);
+        fileUtil.renameInvisableFiles(cwd);
+
+        if (!isSuccessful) {
+            return;
         }
 
-        const fullScaffoldName = scaffoldUtil.getFullName(chosenScaffoldName);
+        // write cache file to store init infomation
+        scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
 
-        if (fileUtil.isEmptyDir({ dir: cwd, ignored })) {
-            const isSuccessful = yield downloadTemplate(cwd, fullScaffoldName);
-            fileUtil.renameInvisableFiles(cwd);
+        // run npm install
+        const nmpath = path.join(cwd, 'node_modules');
+        if (!fs.existsSync(nmpath) || fs.readdirSync(nmpath).length <= 5) {
+            const spinner = ora(`${'[bio]'.green} npm install running`).start();
 
-            if (!isSuccessful) {
-                return;
+            try {
+                require('child_process').execSync(`cd ${cwd} && npm i --silent`);
+                spinner.succeed(`${'[bio]'.green} npm install done`).stop();
+            } catch (err) {
+                spinner.fail(`${'[bio]'.red} npm install failed`).stop();
             }
-
-            // write cache file to store init infomation
-            scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
-
-            // run npm install
-            const nmpath = path.join(cwd, 'node_modules');
-            if (!fs.existsSync(nmpath) || fs.readdirSync(nmpath).length <= 5) {
-                const spinner = ora(`${'[bio]'.green} npm install running`).start();
-
-                try {
-                    require('child_process').execSync(`cd ${cwd} && npm i --silent`);
-                    spinner.succeed(`${'[bio]'.green} npm install done`).stop();
-                } catch (err) {
-                    spinner.fail(`${'[bio]'.red} npm install failed`).stop();
-                }
-            }
-
-            console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
-        } else {
-            // write cache file to store init infomation
-            scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
-            console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
         }
-    });
+
+        console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
+    } else {
+        // write cache file to store init infomation
+        scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
+        console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
+    }
 };
