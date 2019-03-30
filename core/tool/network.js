@@ -10,7 +10,6 @@ const getPort = require('get-port');
 const URL = require('url-parse');
 
 module.exports = {
-
     /**
      * @thunk function
      * @private
@@ -18,11 +17,11 @@ module.exports = {
      * @param {Number/String} defaultPort
      */
     _getPort(defaultPort) {
-        return (done) => {
+        return new Promise(resolve => {
             getPort(defaultPort).then((port) => {
-                done(null, port);
+                resolve(port);
             });
-        };
+        });
     },
 
     /**
@@ -30,8 +29,8 @@ module.exports = {
      * @desc check whether port was used
      * @param {Number/String} port
      */
-    checkPortUsed: function* checkPortUsed(port) {
-        const newPort = yield this._getPort(port);
+    async checkPortUsed(port) {
+        const newPort = await this._getPort(port);
 
         if (parseInt(newPort, 10) === parseInt(port, 10)) {
             return false;
@@ -45,11 +44,11 @@ module.exports = {
      * @desc get free port. It will increase one by one from defaultPort to get free port
      * @param {Number/String} defaultPort
      */
-    getFreePort: function* getFreePort(defaultPort) {
-        const finalPort = yield this._getPort(defaultPort);
+    async getFreePort(defaultPort) {
+        const finalPort = await this._getPort(defaultPort);
 
         if (finalPort !== defaultPort) {
-            return yield this.getFreePort(defaultPort + 1);
+            return await this.getFreePort(defaultPort + 1);
         }
 
         return defaultPort;
@@ -61,20 +60,21 @@ module.exports = {
      * @param {String} url
      */
     isReachable(url) {
-        const { hostname } = new URL(url);
-        return (done) => {
+        return new Promise((resolve) => {
+            const { hostname } = new URL(url);
+
             dns.lookup(hostname, (err) => {
                 if (err) {
-                    done(null, false);
+                    resolve(false);
                 } else {
-                    done(null, true);
+                    resolve(true);
                 }
             });
             const reachableTimer = setTimeout(() => {
                 clearTimeout(reachableTimer);
-                done(null, false);
+                resolve(false);
             }, 2000);
-        };
+        });
     },
 
 };

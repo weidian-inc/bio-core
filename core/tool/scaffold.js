@@ -11,7 +11,6 @@ const path = require('path');
 const fse = require('fs-extra');
 
 const pathUtil = require('./path');
-const fileUtil = require('./file');
 const npm = require('./npm');
 
 const getNpmPackageVersion = require('get-npm-package-version');
@@ -66,35 +65,18 @@ module.exports = {
 
     writeScaffoldConfigFile({ scaffoldName }) {
         const cwd = process.cwd();
+        const pkgJsonFile = path.join(cwd, 'package.json');
 
-        /**
-         * 1. .biorc will be read firstly
-         * 2. package.json "bio-scaffold" will be read secondly
-         */
-        const stage0Config = path.join(cwd, pathUtil.configName);
-        const stage1Config = path.join(cwd, 'package.json');
+        // write package.json
+        if (fs.existsSync(pkgJsonFile)) {
+            const pkgContent = fs.readFileSync(pkgJsonFile, 'utf-8');
 
-        const writeFile = () => {
-            fileUtil.writeFileSync(stage0Config, JSON.stringify({
-                scaffold: this.getFullName(scaffoldName),
-            }, null, '\t'));
-        };
-
-        if (fs.existsSync(stage0Config)) {
-            writeFile();
-        } else { // then write package.json
-            if (fs.existsSync(stage1Config)) {
-                const pkgContent = fs.readFileSync(stage1Config, 'utf-8');
-
-                try {
-                    const obj = JSON.parse(pkgContent);
-                    obj['bio-scaffold'] = scaffoldName;
-                    fs.writeFileSync(stage1Config, JSON.stringify(obj, null, '\t'));
-                } catch (err) {
-                    writeFile();
-                }
-            } else {
-                writeFile();
+            try {
+                const obj = JSON.parse(pkgContent);
+                obj['bio-scaffold'] = scaffoldName;
+                fs.writeFileSync(pkgJsonFile, JSON.stringify(obj, null, '\t'));
+            } catch (err) {
+                // eslint-disable-no-empty
             }
         }
     },
@@ -102,28 +84,17 @@ module.exports = {
     getScaffoldNameFromConfigFile() {
         const cwd = process.cwd();
         let scaffoldName = '';
+        const pkgJsonFile = path.join(cwd, 'package.json');
 
-        const stage0Config = path.join(cwd, pathUtil.configName);
-        const stage1Config = path.join(cwd, 'package.json');
-
-        // prefer .biorc
+        // get package.json "bio-scaffold"
         try {
-            scaffoldName = JSON.parse(fs.readFileSync(stage0Config).toString()).scaffold;
+            scaffoldName = JSON.parse(fs.readFileSync(pkgJsonFile).toString())['bio-scaffold'];
         } catch (err) {
             // eslint-disable-no-empty
         }
 
-        // then get package.json "bio-scaffold"
         if (!scaffoldName) {
-            try {
-                scaffoldName = JSON.parse(fs.readFileSync(stage1Config).toString())['bio-scaffold'];
-            } catch (err) {
-                // eslint-disable-no-empty
-            }
-        }
-
-        if (!scaffoldName) {
-            console.log('\nno scaffold info found at current directory\n'.red);
+            console.log('\nno scaffold info found in package.json\n'.red);
         }
 
         return scaffoldName;

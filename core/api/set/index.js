@@ -23,7 +23,7 @@ const checkType = (input, expectedType) => {
  * @param {String} object.configName: config file of current project. '.biorc' by default
  * @param {String} object.scaffoldRegistry: registry used by installing and updating scaffold. user config by default
  */
-module.exports = ({ cacheFolder, configName, scaffold } = {}) => {
+module.exports = ({ cacheFolder, configName, registry, scaffoldList, beforeScaffoldInstall } = {}) => {
     if (cacheFolder) {
         checkType(cacheFolder, '[object String]');
         pathUtil.cacheFolder = cacheFolder;
@@ -34,35 +34,33 @@ module.exports = ({ cacheFolder, configName, scaffold } = {}) => {
         pathUtil.configName = configName;
     }
 
-    if (scaffold) {
-        checkType(configName, '[object Object]');
+    checkType(configName, '[object Object]');
 
-        if (scaffold.registry) {
-            npmUtil.scaffoldRegistry = scaffold.registry;
-        }
+    if (registry) {
+        npmUtil.scaffoldRegistry = registry;
+    }
 
-        if (scaffold.preInstall) {
-            scaffoldUtil.preInstall = scaffold.preInstall.bind(scaffoldUtil);
-        }
+    if (beforeScaffoldInstall) {
+        scaffoldUtil.preInstall = beforeScaffoldInstall.bind(scaffoldUtil);
+    }
 
-        if (scaffold.list && scaffold.list.length) {
-            const formattedScaffoldList = [];
+    if (scaffoldList && scaffoldList.length) {
+        const formattedScaffoldList = [];
 
-            // TODO: check
+        // TODO: check
 
-            // format
-            scaffold.list.forEach((item, index) => {
-                const formattedItem = {};
+        // format
+        scaffoldList.forEach((item, index) => {
+            const formattedItem = {};
 
-                formattedItem.name = `${item.shortName} : ${item.desc}`;
-                formattedItem.value = item.shortName;
-                formattedItem.fullName = item.fullName;
-                formattedItem.version = item.version || 'latest';
+            formattedItem.name = `${item.shortName} : ${item.desc}`;
+            formattedItem.value = item.shortName;
+            formattedItem.fullName = item.fullName;
+            formattedItem.version = item.version || 'latest';
 
-                formattedScaffoldList[index] = formattedItem;
-            });
+            formattedScaffoldList[index] = formattedItem;
+        });
 
-            scaffoldUtil.scaffoldList = formattedScaffoldList;
-        }
+        scaffoldUtil.scaffoldList = formattedScaffoldList;
     }
 };

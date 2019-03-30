@@ -49,38 +49,35 @@ module.exports = (commander) => {
     core.set({
         configName: '.biorc',
 
-        scaffold: {
-            registry: 'https://registry.npmjs.org/',
+        registry: 'https://registry.npmjs.org/',
 
-            list: [{
-                shortName: 'pure',
-                fullName: 'bio-scaffold-pure',
-                desc: 'traditional project',
-                version: 'latest',
-            }, {
-                shortName: 'vue',
-                fullName: 'bio-scaffold-vue',
-                desc: 'vue project',
-                version: 'latest',
-            }, {
-                shortName: 'react',
-                fullName: 'bio-scaffold-react',
-                desc: 'react project',
-                version: 'latest',
-            }],
+        scaffoldList: [{
+            shortName: 'pure',
+            fullName: 'bio-scaffold-pure',
+            desc: 'traditional project',
+            version: 'latest',
+        }, {
+            shortName: 'vue',
+            fullName: 'bio-scaffold-vue',
+            desc: 'vue project',
+            version: 'latest',
+        }, {
+            shortName: 'react',
+            fullName: 'bio-scaffold-react',
+            desc: 'react project',
+            version: 'latest',
+        }],
 
-            preInstall(installationDir) {
-                const npmrcPath = path.join(installationDir, '.npmrc');
+        beforeScaffoldInstall(installationDir) {
+            const npmrcPath = path.join(installationDir, '.npmrc');
 
-                fse.ensureFileSync(npmrcPath);
-                fs.writeFileSync(npmrcPath, [
-                    // 'sass_binary_site=https://npm.taobao.org/mirrors/node-sass/',
-                    // 'phantomjs_cdnurl=https://npm.taobao.org/mirrors/phantomjs/',
-                    // 'electron_mirror=https://npm.taobao.org/mirrors/electron/',
-                ].join('\n'));
-            },
-        },
-
+            fse.ensureFileSync(npmrcPath);
+            fs.writeFileSync(npmrcPath, [
+                // 'sass_binary_site=https://npm.taobao.org/mirrors/node-sass/',
+                // 'phantomjs_cdnurl=https://npm.taobao.org/mirrors/phantomjs/',
+                // 'electron_mirror=https://npm.taobao.org/mirrors/electron/',
+            ].join('\n'));
+        }
     });
 
     commander

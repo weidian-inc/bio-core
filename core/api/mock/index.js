@@ -8,7 +8,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const co = require('co');
 const fse = require('fs-extra');
 const nodestatic = require('node-static');
 
@@ -35,41 +34,39 @@ function createDemo(mockDir) {
  * @desc local mock
  * @param {Number} mock port
  */
-module.exports = (port = 7000) => {
-    co(function* mock() {
-        const cwd = process.cwd();
+module.exports = async (port = 7000) => {
+    const cwd = process.cwd();
 
-        // check port used info
-        const portInUse = yield networkUtil.checkPortUsed(port);
+    // check port used info
+    const portInUse = await networkUtil.checkPortUsed(port);
 
-        if (portInUse) {
-            console.log(`\n[PORT IN USE] ${port}\n`);
-            return;
-        }
+    if (portInUse) {
+        console.log(`\n[PORT IN USE] ${port}\n`);
+        return;
+    }
 
-        const mockDir = path.join(cwd, 'mock');
+    const mockDir = path.join(cwd, 'mock');
 
-        fse.ensureDirSync(mockDir);
+    fse.ensureDirSync(mockDir);
 
-        createDemo(mockDir);
+    createDemo(mockDir);
 
-        const mockfile = new nodestatic.Server(path.join(cwd, './mock'), {
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': true,
-            },
-        });
-
-        require('http').createServer((request, response) => {
-            request.addListener('end', () => {
-                mockfile.options.headers['Access-Control-Allow-Origin'] = request.headers.origin || '*';
-                mockfile.serve(request, response);
-            }).resume();
-        }).listen(port);
-
-        console.log([
-            '\nServer lanched at dir "/mock/" automatically.\n',
-            `demo: http://127.0.0.1:${port}/test.json\n`,
-        ].join('\n'));
+    const mockfile = new nodestatic.Server(path.join(cwd, './mock'), {
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+        },
     });
+
+    require('http').createServer((request, response) => {
+        request.addListener('end', () => {
+            mockfile.options.headers['Access-Control-Allow-Origin'] = request.headers.origin || '*';
+            mockfile.serve(request, response);
+        }).resume();
+    }).listen(port);
+
+    console.log([
+        '\nServer lanched at dir "/mock/" automatically.\n',
+        `demo: http://127.0.0.1:${port}/test.json\n`,
+    ].join('\n'));
 };
