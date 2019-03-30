@@ -9,16 +9,14 @@ const fs = require('fs');
 const path = require('path');
 
 const fileUtil = require('../../tool/file');
-const pathUtil = require('../../tool/path');
 const scaffoldUtil = require('../../tool/scaffold');
 
 const fse = require('fs-extra');
 const inquirer = require('inquirer');
-const ora = require('ora');
 
 const getTemplateDirPath = (scaffoldName) => {
     return new Promise(resolve => {
-        const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
+        const scaffoldFolder = scaffoldUtil.getScaffoldFolder(scaffoldName);
         const demoFolder = path.join(scaffoldFolder, 'project-template');
 
         const templateNames = [];
@@ -104,19 +102,6 @@ module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) =
 
         // write cache file to store init infomation
         scaffoldUtil.writeScaffoldInConfigFile({ scaffoldName: fullScaffoldName });
-
-        // run npm install
-        const nmpath = path.join(cwd, 'node_modules');
-        if (!fs.existsSync(nmpath) || fs.readdirSync(nmpath).length <= 5) {
-            const spinner = ora(`${'[bio]'.green} npm install running`).start();
-
-            try {
-                require('child_process').execSync(`cd ${cwd} && npm i --silent`);
-                spinner.succeed(`${'[bio]'.green} npm install done`).stop();
-            } catch (err) {
-                spinner.fail(`${'[bio]'.red} npm install failed`).stop();
-            }
-        }
 
         console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
     } else {

@@ -10,7 +10,6 @@ const fs = require('fs');
 const fse = require('fs-extra');
 
 const fileUtil = require('../../../tool/file');
-const pathUtil = require('../../../tool/path');
 const scaffoldUtil = require('../../../tool/scaffold');
 
 /**
@@ -23,8 +22,8 @@ module.exports = (oldName, newName) => {
     const fullOldName = scaffoldUtil.getFullName(oldName);
     const fullNewName = scaffoldUtil.getFullName(newName);
 
-    const oldPath = pathUtil.getScaffoldFolder(fullOldName);
-    const newPath = pathUtil.getScaffoldFolder(fullNewName);
+    const oldPath = scaffoldUtil.getScaffoldFolder(fullOldName);
+    const newPath = scaffoldUtil.getScaffoldFolder(fullNewName);
 
     // rename
     fse.moveSync(oldPath, newPath);

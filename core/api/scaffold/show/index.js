@@ -5,7 +5,6 @@
  * @date  2017/08/11
  */
 
-const pathUtil = require('../../../tool/path');
 const scaffoldUtil = require('../../../tool/scaffold');
 
 /**
@@ -20,7 +19,7 @@ module.exports = (scaffoldName = '') => {
 
     const fullScaffoldName = scaffoldUtil.getFullName(scaffoldName);
 
-    const scaffoldFolder = pathUtil.getScaffoldFolder(fullScaffoldName);
+    const scaffoldFolder = scaffoldUtil.getScaffoldFolder(fullScaffoldName);
 
     // 判断脚手架是否已安装
     if (scaffoldUtil.isScaffoldExists(fullScaffoldName)) {

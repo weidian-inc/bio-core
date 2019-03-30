@@ -51,7 +51,7 @@ const runSyncDirectory = (from, to, { watch }) => {
  * @param {String} object.scaffoldName: scaffold name ( full name )
  */
 const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName }) => {
-    const scaffoldFolder = pathUtil.getScaffoldFolder(scaffoldName);
+    const scaffoldFolder = scaffoldUtil.getScaffoldFolder(scaffoldName);
 
     if (!fs.existsSync(path.join(scaffoldFolder, 'bio-entry.js'))) {
         console.log(`\nScaffold ${scaffoldName.green}'s entry file ${'bio-entry.js'.green} is not found, please check whethor you've inited project with the right scaffold.\n`);
@@ -210,7 +210,7 @@ module.exports = async (currentEnv, { watch = false, scaffold, isCurrentProject 
     }
 
     scaffoldName = scaffoldUtil.getFullName(scaffoldName);
-    const workspaceFolder = pathUtil.getWorkspaceFolder({ cwd, scaffoldName });
+    const workspaceFolder = scaffoldUtil.getWorkspaceFolder({ cwd, scaffoldName });
 
     // ensure latest scaffold
     scaffoldUtil.ensureScaffoldLatest(scaffoldName);
@@ -221,9 +221,11 @@ module.exports = async (currentEnv, { watch = false, scaffold, isCurrentProject 
 
     // run 'npm install' when node_modules does not exist
     if (isCurrentProject) {
-        const spinner = ora(`${'[bio]'.green} npm installing...`).start();
-        require('child_process').execSync(`cd ${cwd} && npm i --silent`);
-        spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
+        if (!fs.existsSync(path.join(cwd, 'node_modules'))) {
+            const spinner = ora(`${'[bio]'.green} npm installing...`).start();
+            require('child_process').execSync(`cd ${cwd} && npm i --silent`);
+            spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
+        }
 
         const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
 
