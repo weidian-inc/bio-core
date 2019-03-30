@@ -20,24 +20,16 @@ const checkType = (input, expectedType) => {
  * @desc set configs
  * @param {Object}
  * @param {String} object.cacheFolder: path for storing modules like cmd/scaffold. 'path.join(process.env.HOME, '.bio')' by default
- * @param {String} object.configName: config file of current project. '.biorc' by default
- * @param {String} object.scaffoldRegistry: registry used by installing and updating scaffold. user config by default
+ * @param {String} object.registry: registry used by installing and updating scaffold. user config by default
  */
-module.exports = ({ cacheFolder, configName, registry, scaffoldList, beforeScaffoldInstall } = {}) => {
+module.exports = ({ cacheFolder, registry, scaffoldList, beforeScaffoldInstall } = {}) => {
     if (cacheFolder) {
         checkType(cacheFolder, '[object String]');
         pathUtil.cacheFolder = cacheFolder;
     }
 
-    if (configName) {
-        checkType(configName, '[object String]');
-        pathUtil.configName = configName;
-    }
-
-    checkType(configName, '[object Object]');
-
     if (registry) {
-        npmUtil.scaffoldRegistry = registry;
+        npmUtil.registry = registry;
     }
 
     if (beforeScaffoldInstall) {

@@ -19,8 +19,6 @@ const network = require('../../../tool/network');
 const pathUtil = require('../../../tool/path');
 const scaffoldUtil = require('../../../tool/scaffold');
 
-require('child-process-close');
-
 /**
  * @func
  * @desc sync directory

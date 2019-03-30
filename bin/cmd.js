@@ -47,10 +47,6 @@ module.exports = (commander) => {
     };
 
     core.set({
-        configName: '.biorc',
-
-        registry: 'https://registry.npmjs.org/',
-
         scaffoldList: [{
             shortName: 'pure',
             fullName: 'bio-scaffold-pure',

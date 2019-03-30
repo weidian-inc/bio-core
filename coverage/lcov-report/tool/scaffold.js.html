@@ -957,7 +957,7 @@ module.exports = {
 <span class="cstat-no" title="statement not covered" >                return false;</span>
             }
         } else {
-<span class="cstat-no" title="statement not covered" >            const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.scaffoldRegistry, timeout: 2000 });</span>
+<span class="cstat-no" title="statement not covered" >            const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.registry, timeout: 2000 });</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >            if (latestVersion) {</span>
 <span class="cstat-no" title="statement not covered" >                if (currentVersion !== latestVersion) {</span>
@@ -1022,7 +1022,7 @@ module.exports = {
 <span class="cstat-no" title="statement not covered" >        createExecPackageJsonFile(execInstallFolder, scaffoldName);</span>
 <span class="cstat-no" title="statement not covered" >        this.preInstall(execInstallFolder);</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        const order = `cd ${execInstallFolder} &amp;&amp; npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}`;</span>
+<span class="cstat-no" title="statement not covered" >        const order = `cd ${execInstallFolder} &amp;&amp; npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}`;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        if (async) {</span>
 <span class="cstat-no" title="statement not covered" >            child.exec(order, (error) =&gt; {</span>
@@ -1043,7 +1043,7 @@ module.exports = {
 <span class="cstat-no" title="statement not covered" >                this.moveScaffoldCache(scaffoldName);</span>
             } catch (err) {
                 // throw Error(err);
-<span class="cstat-no" title="statement not covered" >                console.log(`\nrun "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}" failed and skipped\n`.red);</span>
+<span class="cstat-no" title="statement not covered" >                console.log(`\nrun "npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}" failed and skipped\n`.red);</span>
             }
         }
     },

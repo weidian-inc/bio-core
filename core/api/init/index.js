@@ -83,7 +83,7 @@ const choseScaffold = () => {
     });
 };
 
-module.exports = async ({ ignored = [pathUtil.configName, /readme\.md/i], scaffoldName = '' } = {}) => {
+module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) => {
     const cwd = process.cwd();
 
     let chosenScaffoldName = scaffoldName;

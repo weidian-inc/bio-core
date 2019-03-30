@@ -207,7 +207,7 @@ module.exports = {
                 return false;
             }
         } else {
-            const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.scaffoldRegistry, timeout: 2000 });
+            const latestVersion = getNpmPackageVersion(scaffoldName, { registry: npm.registry, timeout: 2000 });
 
             if (latestVersion) {
                 if (currentVersion !== latestVersion) {
@@ -260,7 +260,7 @@ module.exports = {
 
         // run npm install
         console.log('installing dependencies...');
-        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.scaffoldRegistry}`, {
+        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.registry}`, {
             stdio: 'inherit'
         });
 
@@ -286,7 +286,7 @@ module.exports = {
         createExecPackageJsonFile(execInstallFolder, scaffoldName);
         this.preInstall(execInstallFolder);
 
-        const order = `cd ${execInstallFolder} && npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion} --no-optional`;
+        const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional`;
 
         if (async) {
             child.exec(order, (error) => {
@@ -306,7 +306,7 @@ module.exports = {
 
                 this.moveScaffoldCache(scaffoldName);
             } catch (err) {
-                console.log(`\nError occurred when "npm --registry ${npm.scaffoldRegistry} install ${scaffoldName}@${hopedVersion}"\n`.red);
+                console.log(`\nError occurred when "npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}"\n`.red);
                 process.exit(1);
             }
         }
