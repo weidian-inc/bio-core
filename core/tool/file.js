@@ -25,7 +25,6 @@ const readdirSync = (dir, filter) => {
 };
 
 module.exports = {
-
     readdirSync,
 
     /**

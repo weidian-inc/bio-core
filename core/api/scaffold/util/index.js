@@ -1,7 +1,6 @@
 const scaffoldUtil = require('../../../tool/scaffold');
 
 module.exports = {
-    getScaffoldName: scaffoldUtil.getScaffoldName,
-    writeScaffoldConfigFile: scaffoldUtil.writeScaffoldConfigFile,
+    writeScaffoldInConfigFile: scaffoldUtil.writeScaffoldInConfigFile,
     getScaffoldNameFromConfigFile: scaffoldUtil.getScaffoldNameFromConfigFile,
 };

@@ -61,9 +61,9 @@ const getMaps = (() => {
 })();
 
 module.exports = {
-    preInstall() {},
+    beforeScaffoldInstall() {},
 
-    writeScaffoldConfigFile({ scaffoldName }) {
+    writeScaffoldInConfigFile({ scaffoldName }) {
         const cwd = process.cwd();
         const pkgJsonFile = path.join(cwd, 'package.json');
 
@@ -123,23 +123,6 @@ module.exports = {
     },
 
     scaffoldList: [], // TODO: add default scaffolds
-
-    /**
-     * @func
-     * @desc get scaffold name for current project from config file
-     * @param {String} cwd: current project dir path
-     * @return {String} scaffold name
-     */
-    getScaffoldName(cwd) {
-        const { configName } = pathUtil;
-        const configPath = path.join(cwd, configName);
-
-        const content = fs.readFileSync(configPath).toString();
-
-        const contentObj = JSON.parse(content);
-
-        return contentObj.scaffold;
-    },
 
     /**
      * @func
@@ -284,7 +267,8 @@ module.exports = {
 
         // ensure package.json exists
         createExecPackageJsonFile(execInstallFolder, scaffoldName);
-        this.preInstall(execInstallFolder);
+
+        this.beforeScaffoldInstall(execInstallFolder);
 
         const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional`;
 

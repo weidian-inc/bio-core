@@ -780,9 +780,9 @@ const getMaps = (() =&gt; {
 module.exports = {
     checkOutdated: true,
 &nbsp;
-    preInstall<span class="fstat-no" title="function not covered" >() {</span>},
+    beforeScaffoldInstall<span class="fstat-no" title="function not covered" >() {</span>},
 &nbsp;
-    writeScaffoldConfigFile<span class="fstat-no" title="function not covered" >({ scaffoldName }) {</span>
+    writeScaffoldInConfigFile<span class="fstat-no" title="function not covered" >({ scaffoldName }) {</span>
 <span class="cstat-no" title="statement not covered" >        const cwd = process.cwd();</span>
 &nbsp;
         /**
@@ -1020,7 +1020,7 @@ module.exports = {
 &nbsp;
         // ensure package.json exists
 <span class="cstat-no" title="statement not covered" >        createExecPackageJsonFile(execInstallFolder, scaffoldName);</span>
-<span class="cstat-no" title="statement not covered" >        this.preInstall(execInstallFolder);</span>
+<span class="cstat-no" title="statement not covered" >        this.beforeScaffoldInstall(execInstallFolder);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        const order = `cd ${execInstallFolder} &amp;&amp; npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}`;</span>
 &nbsp;

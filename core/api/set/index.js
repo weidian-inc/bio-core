@@ -33,7 +33,7 @@ module.exports = ({ cacheFolder, registry, scaffoldList, beforeScaffoldInstall }
     }
 
     if (beforeScaffoldInstall) {
-        scaffoldUtil.preInstall = beforeScaffoldInstall.bind(scaffoldUtil);
+        scaffoldUtil.beforeScaffoldInstall = beforeScaffoldInstall.bind(scaffoldUtil);
     }
 
     if (scaffoldList && scaffoldList.length) {

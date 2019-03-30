@@ -103,7 +103,7 @@ module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) =
         }
 
         // write cache file to store init infomation
-        scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
+        scaffoldUtil.writeScaffoldInConfigFile({ scaffoldName: fullScaffoldName });
 
         // run npm install
         const nmpath = path.join(cwd, 'node_modules');
@@ -121,7 +121,7 @@ module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) =
         console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
     } else {
         // write cache file to store init infomation
-        scaffoldUtil.writeScaffoldConfigFile({ scaffoldName: fullScaffoldName });
+        scaffoldUtil.writeScaffoldInConfigFile({ scaffoldName: fullScaffoldName });
         console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
     }
 };
