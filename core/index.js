@@ -31,5 +31,7 @@ module.exports = {
         serve: require('./api/docsite/serve/index'),
         push: require('./api/docsite/push/index'),
         clear: require('./api/docsite/clear/index'),
-    }
+    },
+
+    plugin: require('./api/plugin/index'),
 };

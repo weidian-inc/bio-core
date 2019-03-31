@@ -1,35 +1,15 @@
 module.exports = (commander) => {
     require('colors');
 
-    const semver = require('semver');
-    const requiredVersion = require('../package.json').engines.node
-
-    if (!semver.satisfies(process.version, requiredVersion)) {
-        console.log(
-            `\nYou are using Node ${process.version}, but this version of bio-cli requires Node ${requiredVersion}.\nPlease upgrade your Node version.\n`.yellow)
-        process.exit(1)
-    }
+    require('./mods/check-node-version')();
+    require('./mods/watch-error')();
 
     const fs = require('fs');
     const path = require('path');
     const fse = require('fs-extra');
-    const inquirer = require('inquirer');
     const core = require('../core/index');
 
     const scaffoldUtil = core.scaffold.util;
-
-    process.on('uncaughtException', (e) => {
-        console.log(e);
-        process.exit(1);
-    });
-
-    process.on('SIGINT', () => {
-        process.exit(0);
-    });
-
-    process.on('unhandledRejection', (reason, p) => {
-        console.log('Unhandled Rejection at: Promise ', p, ' reason: ', reason);
-    });
 
     const showHelp = () => {
         console.log(['',
@@ -76,6 +56,7 @@ module.exports = (commander) => {
         }
     });
 
+    /***************** init project start *************************/
     commander
         .command('init [scaffoldName]')
         .description('init project.')
@@ -83,74 +64,55 @@ module.exports = (commander) => {
         .action((scaffoldName) => {
             core.init({ scaffoldName });
         });
+    /***************** init project end *************************/
 
+    /***************** run project start *************************/
     commander
         .command('run <task>')
         .description('run.')
-        .option('-n, --no-watch', 'watch file changes')
-        .action((task, options) => {
-            const { watch } = options;
-
-            if (!scaffoldUtil.getScaffoldNameFromConfigFile()) {
-                core.init().then(() => {
-                    core.scaffold.run(task, { watch });
-                });
-            } else {
-                core.scaffold.run(task, { watch });
-            }
+        .action((task) => {
+            core.scaffold.run(task);
         });
+    /***************** run project end *************************/
 
-    // scaffold orders
+
+    /***************** scaffold start *************************/ 
     commander
-        .command('scaffold <cmd> [scaffoldName]')
+        .command('scaffold-show <scaffoldName>')
         .description('orders about scaffold.')
-        .action((cmd, param) => {
-            if (cmd === 'create') {
-                const scaffoldName = 'bio-scaffold-demo';
-
-                inquirer.prompt([{
-                    type: 'input',
-                    name: 'createdScaffoldName',
-                    message: 'Input scaffold name',
-                }]).then((answers) => {
-                    console.log(`\nCreating scaffold: ${scaffoldName}. You can modify scaffold information after the installation`);
-                    core.scaffold.install(scaffoldName);
-                    core.scaffold.rename(scaffoldName, answers.createdScaffoldName);
-                    core.scaffold.show(answers.createdScaffoldName);
-                });
-            } else if (cmd === 'show') {
-                if (!param) {
-                    console.log('\nPlease input scaffold name you want to show: bio scaffold show <scaffoldName>\n');
-                    return;
-                }
-
-                core.scaffold.show(param);
-            }
+        .action((scaffoldName) => {
+            core.scaffold.show(scaffoldName);
         });
+    /***************** scaffold end *************************/
 
+    /***************** mock start *************************/
     commander
         .command('mock [port]')
         .description('local mock.')
         .action((port) => {
             core.mock(port);
         });
+    /***************** mock end *************************/
 
+    /***************** lint start *************************/
     commander
-        .command('lint [lintTarget]')
-        .description('lint.')
+        .command('lint-run')
+        .description('lint run.')
         .option('-w, --watch', 'watch')
         .option('-f, --fix', 'format')
-        .action((lintTarget, cmd) => {
-            if (lintTarget && lintTarget === 'init') {
-                core.lint.init();
-            } else {
-                core.lint.run({
-                    lintTarget, 
-                    watch: cmd.watch, 
-                    fix: cmd.fix 
-                });
-            }
+        .action((options) => {
+            core.lint.run({
+                watch: options.watch,
+                fix: options.fix
+            });
         });
+    commander
+        .command('lint-init')
+        .description('lint init.')
+        .action(() => {
+            core.lint.init();
+        });
+    /***************** lint end *************************/
 
     /***************** docsite start *************************/
     commander
@@ -202,6 +164,45 @@ module.exports = (commander) => {
                 stdio: 'inherit',
             });
         });
+
+    /***************** plugins start *************************/
+    commander
+        .command('plugin-init')
+        .description('plugin')
+        .action(() => {
+            core.plugin.init();
+        });
+    commander
+        .command('plugin-add <pluginName>')
+        .description('plugin')
+        .action((pluginName) => {
+            core.plugin.add({ pluginName, commanderEvents: commander._events });
+        });
+    commander
+        .command('plugin-remove <pluginName>')
+        .description('plugin')
+        .action((pluginName) => {
+            core.plugin.remove({ pluginName });
+        });
+    commander
+        .command('plugin-list')
+        .description('plugin')
+        .action(() => {
+            core.plugin.list();
+        });
+    commander
+        .command('plugin-link')
+        .description('plugin')
+        .action(() => {
+            core.plugin.link();
+        });
+    commander
+        .command('plugin-unlink')
+        .description('plugin')
+        .action(() => {
+            core.plugin.unlink();
+        });
+    /***************** plugins end *************************/
 
     // error on unknown commands
     commander.on('command:*', function () {
