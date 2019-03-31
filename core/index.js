@@ -24,5 +24,12 @@ module.exports = {
 
     hook: require('./api/hook/index'),
 
-    test: require('./api/test/index')
+    test: require('./api/test/index'),
+
+    docsite: {
+        init: require('./api/docsite/init/index'),
+        serve: require('./api/docsite/serve/index'),
+        push: require('./api/docsite/push/index'),
+        clear: require('./api/docsite/clear/index'),
+    }
 };

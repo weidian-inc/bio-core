@@ -152,6 +152,37 @@ module.exports = (commander) => {
             }
         });
 
+    /***************** docsite start *************************/
+    commander
+        .command('docsite-init')
+        .description('docsite')
+        .action(() => {
+            core.docsite.init();
+        });
+    commander
+        .command('docsite-serve [target]')
+        .option('-m, --multi', 'multi website')
+        .option('-i, --show-index', 'showIndex')
+        .option('-p, --port', 'port')
+        .description('docsite serve')
+        .action((target, options) => {
+            core.docsite.serve({ multi: options.multi, target, showIndex: options.showIndex, port: options.port });
+        });
+    commander
+        .command('docsite-push [branch]')
+        .option('-m, --multi', 'multi website')
+        .description('docsite')
+        .action((branch, options) => {
+            core.docsite.push({ multi: options.multi, branch });
+        });
+    commander
+        .command('docsite-clear')
+        .description('docsite clear project.')
+        .action(() => {
+            core.docsite.clear();
+        });
+    /***************** docsite end *************************/
+
     commander
         .command('test')
         .description('add test configs.')

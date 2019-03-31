@@ -85,5 +85,10 @@
         "socket.io": "^2.0.4",
         "sync-directory": "^1.0.9",
         "url-parse": "^1.1.9"
+    },
+    "dependencies": {
+        "directory-tree": "^2.2.1",
+        "react-dev-utils": "^8.0.0",
+        "relative": "^3.0.2"
     }
 }

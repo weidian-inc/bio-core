@@ -1,0 +1,25 @@
+{
+  "name": "docsite-project",
+  "version": "1.0.0",
+  "description": "docsite website",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docsify-build serve & docsify serve ./ -p 3001 -P 35278",
+    "push": "npm run build && git add . && git commit -m 'update' && git push origin gh-pages",
+    "build": "docsify-build build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoperyy/hoperyy.github.io.git"
+  },
+  "author": "https://github.com/hoperyy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hoperyy/hoperyy.github.io/issues"
+  },
+  "homepage": "https://github.com/hoperyy/hoperyy.github.io#readme",
+  "devDependencies": {
+    "docsify-build-cli": "^1.0.10",
+    "docsify-cli": "^4.2.1"
+  }
+}

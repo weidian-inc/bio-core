@@ -3,3 +3,4 @@
 **/node_modules
 **/dist
 lint-result/*
+**/docsite/_tool/template/*
