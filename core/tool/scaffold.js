@@ -13,6 +13,7 @@ const fse = require('fs-extra');
 const md5 = require('md5');
 
 const pathUtil = require('./path');
+const logUtil = require('./log');
 const npm = require('./npm');
 
 const getNpmPackageVersion = require('get-npm-package-version');
@@ -136,15 +137,16 @@ module.exports = {
         this.moveScaffoldCache(scaffoldName);
 
         if (!this.isScaffoldExists(scaffoldName)) {
-            console.log(`installing scaffold ${scaffoldName}...`);
+            logUtil.start(`installing scaffold ${scaffoldName}...`);
             this.installScaffold(scaffoldName, { async: false });
-            console.log(`scaffold ${scaffoldName} installed successfully`);
+            logUtil.stop();
             return;
         }
 
         if (this._isScaffoldOutdate(scaffoldName)) {
-            console.log(`\nupdating scaffold ${scaffoldName}...\n`);
+            logUtil.start(`updating scaffold ${scaffoldName}...`);
             this.installScaffold(scaffoldName, { async: false });
+            logUtil.stop();
         }
     },
 
@@ -157,7 +159,6 @@ module.exports = {
     isScaffoldExists(scaffoldName) {
         const pkg = path.join(this.getScaffoldFolder(scaffoldName), 'package.json');
         if (!fs.existsSync(pkg)) {
-            console.log(`\n${scaffoldName}/package.json is not found at local\n`);
             return false;
         }
 
@@ -212,7 +213,6 @@ module.exports = {
     moveScaffoldCache(scaffoldName) {
         const execInstallFolder = this.getScaffoldExecInstallFolder(scaffoldName);
         const scaffoldFolder = this.getScaffoldFolder(scaffoldName);
-        const scaffoldWrapper = this.getScaffoldWrapper(scaffoldName);
 
         const srcScaffold = path.join(execInstallFolder, 'node_modules', scaffoldName);
         const srcScaffoldDep = path.join(execInstallFolder, 'node_modules');
@@ -226,7 +226,6 @@ module.exports = {
         }
 
         // move scaffold
-        console.log('move scaffold: ', srcScaffold, path.join(scaffoldWrapper, scaffoldName), scaffoldFolder);
         fse.moveSync(srcScaffold, scaffoldFolder, {
             overwrite: true,
         });
@@ -244,10 +243,9 @@ module.exports = {
         });
 
         // run npm install
-        console.log('installing dependencies...');
-        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.registry}`, {
-            stdio: 'inherit'
-        });
+        logUtil.start('installing dependencies...');
+        require('child_process').execSync(`cd ${scaffoldFolder} && npm i --registry ${npm.registry} --silent`);
+        logUtil.stop();
 
         fse.removeSync(execInstallFolder);
     },
@@ -272,7 +270,7 @@ module.exports = {
 
         this.beforeScaffoldInstall(execInstallFolder);
 
-        const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional`;
+        const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional --silent`;
 
         if (async) {
             child.exec(order, (error) => {
@@ -281,15 +279,10 @@ module.exports = {
                     fse.removeSync(execInstallFolder);
                     return;
                 }
-
-                console.log(`scaffold "${scaffoldName}" updated successfully!`);
             });
         } else {
             try {
-                child.execSync(order, {
-                    stdio: 'inherit',
-                });
-
+                child.execSync(order);
                 this.moveScaffoldCache(scaffoldName);
             } catch (err) {
                 console.log(`\nError occurred when "npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}"\n`.red);

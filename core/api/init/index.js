@@ -73,22 +73,10 @@ const downloadTemplate = async function(cwd, scaffoldName) {
     return true;
 };
 
-const choseScaffold = () => {
-    return new Promise((resolve) => {
-        inquirer.prompt([{ type: 'list', name: 'scaffoldName', message: 'Select init style', choices: scaffoldUtil.scaffoldList, }]).then((answers) => {
-            resolve(scaffoldUtil.getFullName(answers.scaffoldName));
-        });
-    });
-};
-
-module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) => {
+module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = 'bio-project-templates' } = {}) => {
     const cwd = process.cwd();
 
     let chosenScaffoldName = scaffoldName;
-
-    if (!chosenScaffoldName) {
-        chosenScaffoldName = await choseScaffold();
-    }
 
     const fullScaffoldName = scaffoldUtil.getFullName(chosenScaffoldName);
 
@@ -100,13 +88,6 @@ module.exports = async ({ ignored = [/readme\.md/i], scaffoldName = '' } = {}) =
             return;
         }
 
-        // write cache file to store init infomation
-        scaffoldUtil.writeScaffoldInConfigFile({ scaffoldName: fullScaffoldName });
-
-        console.log(`\nInit project with scaffold ${fullScaffoldName.green} successfully!\n`);
-    } else {
-        // write cache file to store init infomation
-        scaffoldUtil.writeScaffoldInConfigFile({ scaffoldName: fullScaffoldName });
-        console.log('\nSkip creating project files because there are files exisiting in current directory.'.yellow);
+        console.log(`Init project with scaffold ${fullScaffoldName.green} successfully!`);
     }
 };
