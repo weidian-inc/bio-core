@@ -53,21 +53,66 @@ const runSyncDirectory = (from, to, { watch }) => {
 const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName }) => {
     const scaffoldFolder = scaffoldUtil.getScaffoldFolder(scaffoldName);
 
-    if (!fs.existsSync(path.join(scaffoldFolder, 'bio-entry.js'))) {
-        console.log(`\nScaffold ${scaffoldName.green}'s entry file ${'bio-entry.js'.green} is not found, please check whethor you've inited project with the right scaffold.\n`);
+    const pkgScripts = (() => {
+        let scripts = {};
+
+        const pkgJsonFile = path.join(scaffoldFolder, 'package.json');
+
+        if (fs.existsSync(pkgJsonFile)) {
+            try {
+                scripts = JSON.parse(fs.readFileSync(pkgJsonFile, 'utf8')).scripts;
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        return scripts;
+    })();
+
+    let child;
+
+    if (fs.existsSync(path.join(scaffoldFolder, 'bio-entry.js'))) {
+        child = require('child_process').fork('bio-entry.js', [
+            `taskName=${currentEnv}`,
+            `userDir=${cwd}`,
+            `srcDir=${workspaceFolder}`,
+            `distDir=${path.join(cwd, './build')}`,
+            `port=${debugPort}`,
+
+            `currentEnv=${currentEnv}`,
+            `userFolder=${cwd}`,
+            `srcFolder=${workspaceFolder}`,
+            `buildFolder=${path.join(cwd, './build')}`,
+            `debugPort=${debugPort}`,
+        ], {
+            cwd: scaffoldFolder,
+            silent: true,
+        });
+    } else if (pkgScripts[currentEnv]) {
+        // support
+        const prefix = [
+            `taskName=${currentEnv}`,
+            `userDir=${cwd}`,
+            `srcDir=${workspaceFolder}`,
+            `distDir=${path.join(cwd, './build')}`,
+            `port=${debugPort}`,
+
+            `currentEnv=${currentEnv}`,
+            `userFolder=${cwd}`,
+            `srcFolder=${workspaceFolder}`,
+            `buildFolder=${path.join(cwd, './build')}`,
+            `debugPort=${debugPort}`,
+        ].join(' ');
+
+        child = require('child_process').exec(`${prefix} npm run ${currentEnv}`, {
+            // test path
+            cwd: scaffoldFolder,
+            silent: true,
+        });
+    } else {
+        console.log(`\nScaffold ${scaffoldName.green}'s entry file ${'vbuilder-entry.js'.green} is not found, please check whethor you've inited project with the right scaffold.\n`);
         process.exit(1);
     }
-
-    const child = require('child_process').fork('bio-entry.js', [
-        `taskName=${currentEnv}`,
-        `userDir=${cwd}`,
-        `srcDir=${workspaceFolder}`,
-        `distDir=${path.join(cwd, './build')}`,
-        `port=${debugPort}`,
-    ], {
-        cwd: scaffoldFolder,
-        silent: true,
-    });
 
     return child;
 };
@@ -200,7 +245,7 @@ const watchScaffoldProcess = (scaffoldProcess, syncWatcher, debugPort) => {
     });
 };
 
-module.exports = async (currentEnv, { watch = false, scaffold, isCurrentProject = true } = {}) => {
+module.exports = async (currentEnv, { watch = false, scaffold } = {}) => {
     const cwd = process.cwd();
 
     let scaffoldName = scaffold || scaffoldUtil.getScaffoldNameFromConfigFile();
@@ -220,41 +265,29 @@ module.exports = async (currentEnv, { watch = false, scaffold, isCurrentProject 
     ora(`${'[bio]'.green} scaffold: ${scaffoldUtil.getShortName(scaffoldName).green}; task: ${currentEnv.green}`).succeed().stop();
 
     // run 'npm install' when node_modules does not exist
-    if (isCurrentProject) {
-        if (!fs.existsSync(path.join(cwd, 'node_modules'))) {
-            const spinner = ora(`${'[bio]'.green} npm installing...`).start();
-            require('child_process').execSync(`cd ${cwd} && npm i --silent`);
-            spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
-        }
-
-        const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
-
-        await killPreProcess();
-
-        // run scaffold
-        const scaffoldProcess = runScaffold({
-            currentEnv,
-            cwd,
-            workspaceFolder,
-            scaffoldName,
-            debugPort,
-        });
-
-        watchScaffoldProcess(scaffoldProcess, watcher, debugPort);
-
-        recordPreProcess(process.pid, [{
-            pid: scaffoldProcess.pid,
-            ports: [debugPort],
-        }]);
-    } else {
-        const scaffoldProcess = runScaffold({
-            currentEnv,
-            cwd,
-            workspaceFolder,
-            scaffoldName,
-            debugPort,
-        });
-
-        watchScaffoldProcess(scaffoldProcess, null, debugPort);
+    if (!fs.existsSync(path.join(cwd, 'node_modules'))) {
+        const spinner = ora(`${'[bio]'.green} npm installing...`).start();
+        require('child_process').execSync(`cd ${cwd} && npm i --silent`);
+        spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
     }
+
+    const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+
+    await killPreProcess();
+
+    // run scaffold
+    const scaffoldProcess = runScaffold({
+        currentEnv,
+        cwd,
+        workspaceFolder,
+        scaffoldName,
+        debugPort,
+    });
+
+    watchScaffoldProcess(scaffoldProcess, watcher, debugPort);
+
+    recordPreProcess(process.pid, [{
+        pid: scaffoldProcess.pid,
+        ports: [debugPort],
+    }]);
 };
