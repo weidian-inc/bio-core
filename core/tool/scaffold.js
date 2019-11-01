@@ -270,7 +270,7 @@ module.exports = {
 
         this.beforeScaffoldInstall(execInstallFolder);
 
-        const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional --silent`;
+        const order = `cd ${execInstallFolder} && npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion} --no-optional`;
 
         if (async) {
             child.exec(order, (error) => {
@@ -282,7 +282,7 @@ module.exports = {
             });
         } else {
             try {
-                child.execSync(order);
+                child.execSync(order, { stdio: 'inherit' });
                 this.moveScaffoldCache(scaffoldName);
             } catch (err) {
                 console.log(`\nError occurred when "npm --registry ${npm.registry} install ${scaffoldName}@${hopedVersion}"\n`.red);
