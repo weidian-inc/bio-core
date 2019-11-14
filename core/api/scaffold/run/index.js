@@ -7,6 +7,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const fse = require('fs-extra');
+const isWindows = require('is-windows')();
 
 const ora = require('ora');
 const ps = require('ps-node');
@@ -29,8 +31,17 @@ const scaffoldUtil = require('../../../tool/scaffold');
  */
 const runSyncDirectory = (from, to, { watch }) => {
     const spinner = ora(`${'[bio]'.green} preparing...`).start();
+
+    if (isWindows) {
+        try {
+            fse.removeSync(to);
+        } catch (err) {
+            // no content
+        }
+    }
+
     const watcher = syncDirectory(from, to, {
-        type: 'hardlink',
+        type: isWindows ? 'copy' : 'hardlink',
         watch,
         exclude: [/((\.git)|(\.DS_Store))/i, pathUtil.cacheFolder.replace(/\/$/, '').split('/').pop()],
     });

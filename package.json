@@ -35,7 +35,7 @@
         "coverage": "cat ./coverage/lcov.info | coveralls",
         "prepublishOnly": "node prepublish.js"
     },
-    "version": "2.1.1",
+    "version": "2.1.2",
     "optionalDependencies": {
         "anymatch": "^2.0.0",
         "babel-eslint": "^8.2.2",
@@ -88,6 +88,7 @@
     },
     "dependencies": {
         "directory-tree": "^2.2.1",
+        "is-windows": "^1.0.2",
         "react-dev-utils": "^8.0.0",
         "relative": "^3.0.2"
     }
