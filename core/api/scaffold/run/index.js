@@ -99,6 +99,20 @@ const runScaffold = ({ currentEnv, cwd, workspaceFolder, debugPort, scaffoldName
             cwd: scaffoldFolder,
             silent: true,
         });
+    } else if (fs.existsSync(path.join(scaffoldFolder, 'bio-entry-function.js'))) {
+        require(path.join(scaffoldFolder, 'bio-entry-function.js'))({
+            taskName: currentEnv,
+            userDir: cwd,
+            srcDir: workspaceFolder,
+            distDir: path.join(cwd, './build'),
+
+            port: debugPort,
+            currentEnv,
+            userFolder: cwd,
+            srcFolder: workspaceFolder,
+            buildFolder: path.join(cwd, './build'),
+            debugPort,
+        });
     } else if (pkgScripts[currentEnv]) {
         // support
         const prefix = [
@@ -295,10 +309,12 @@ module.exports = async (currentEnv, { watch = false, scaffold } = {}) => {
         debugPort,
     });
 
-    watchScaffoldProcess(scaffoldProcess, watcher, debugPort);
+    if (scaffoldProcess) {
+        watchScaffoldProcess(scaffoldProcess, watcher, debugPort);
 
-    recordPreProcess(process.pid, [{
-        pid: scaffoldProcess.pid,
-        ports: [debugPort],
-    }]);
+        recordPreProcess(process.pid, [{
+            pid: scaffoldProcess.pid,
+            ports: [debugPort],
+        }]);
+    }
 };
