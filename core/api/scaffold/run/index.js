@@ -51,6 +51,30 @@ const runSyncDirectory = (from, to, { watch }) => {
     return watcher;
 };
 
+const getPkgObj = (folder) => {
+    try {
+        const pkgJson = path.join(folder, 'package.json');
+        const pkgObj = JSON.parse(fs.readFileSync(pkgJson, 'utf8'));
+
+        return pkgObj;
+    } catch (err) {
+        return {};
+    }
+};
+
+const checkIfShouldSync = ({ scaffoldFolder, cwd }) => {
+    const scaffoldSyncDeclare = getPkgObj(scaffoldFolder)['bio-sync'];
+    const cwdSyncDeclare = getPkgObj(cwd)['bio-sync'];
+
+    let shouldSync = true;
+
+    if ((scaffoldSyncDeclare === false || scaffoldSyncDeclare === 'false') || (cwdSyncDeclare === false || cwdSyncDeclare === 'false')) {
+        shouldSync = false;
+    }
+
+    return shouldSync;
+}
+
 /**
  * @func
  * @desc run scaffold
@@ -280,7 +304,12 @@ module.exports = async (currentEnv, { watch = false, scaffold } = {}) => {
     }
 
     scaffoldName = scaffoldUtil.getFullName(scaffoldName);
-    const workspaceFolder = scaffoldUtil.getWorkspaceFolder({ cwd, scaffoldName });
+
+    const scaffoldFolder = scaffoldUtil.getScaffoldFolder(scaffoldName);
+
+    const shouldSync = checkIfShouldSync({ scaffoldFolder, cwd });
+
+    const workspaceFolder = shouldSync ? scaffoldUtil.getWorkspaceFolder({ cwd, scaffoldName }) : cwd;
 
     // ensure latest scaffold
     scaffoldUtil.ensureScaffoldLatest(scaffoldName);
@@ -296,7 +325,11 @@ module.exports = async (currentEnv, { watch = false, scaffold } = {}) => {
         spinner.succeed(`${'[bio]'.green} npm installed.`).stop();
     }
 
-    const watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+    let watcher = null;
+
+    if (shouldSync) {
+        watcher = runSyncDirectory(cwd, workspaceFolder, { watch });
+    }
 
     await killPreProcess();
 
