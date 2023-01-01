@@ -89,7 +89,7 @@
     "dependencies": {
         "directory-tree": "^2.2.1",
         "is-windows": "^1.0.2",
-        "react-dev-utils": "^8.0.0",
+        "react-dev-utils": "^12.0.1",
         "relative": "^3.0.2"
     }
 }
